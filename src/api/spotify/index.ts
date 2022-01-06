@@ -1,6 +1,10 @@
 import SpotifyApi from 'spotify-web-api-node';
 
-import { SCOPES, STATE, MARKET } from '@/config';
+import {
+  SCOPES,
+  STATE,
+  MARKET,
+} from '@/config';
 
 const spotifyApi = new SpotifyApi();
 
