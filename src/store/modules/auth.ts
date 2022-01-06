@@ -6,21 +6,28 @@ import {
 } from 'vuex';
 
 export interface AuthModuleState {
+  accessToken: string;
 }
 
 const defaultState = (): AuthModuleState => ({
-
+  accessToken: '',
 });
 
 const getters: GetterTree<AuthModuleState, any> = {
-  
+  getAccessToken: (state) => state.accessToken,
 };
 
 const mutations: MutationTree<AuthModuleState> = {
-
+  setAccessToken(state, accessToken: string) {
+    state.accessToken = accessToken;
+  },
 };
 
 const actions: ActionTree<AuthModuleState, any> = {
+  login(context) {
+  },
+  logout(context) {
+  },
 };
 
 const module: Module<AuthModuleState, Record<string, any>> = {
