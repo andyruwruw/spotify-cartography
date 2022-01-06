@@ -10,7 +10,7 @@ export default Vue.extend({
   name: 'Callback',
 
   created() {
-
+    console.log(this.$route.query);
   },
 });
 </script>

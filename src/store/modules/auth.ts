@@ -25,8 +25,13 @@ const mutations: MutationTree<AuthModuleState> = {
 
 const actions: ActionTree<AuthModuleState, any> = {
   login(context) {
+    console.log('login');
+  },
+  callback(context) {
+    console.log('callback');
   },
   logout(context) {
+    console.log('logout');
   },
 };
 
