@@ -16,9 +16,15 @@ import {
   MeshNormalMaterial,
   Mesh,
   WebGLRenderer,
+  TextureLoader,
   SphereGeometry,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
+import {
+  createSkyBoxMesh,
+} from '@/helpers/skybox';
+import { Track } from '@/helpers/spotify';
 
 export default Vue.extend({
   name: 'Cartography',
@@ -59,11 +65,15 @@ export default Vue.extend({
 
       this.createScene();
 
-      const geometry = new BoxGeometry(0.2, 0.2, 0.2);
-      const material = new MeshNormalMaterial();
+      this.createSkyBox();
 
-      this.mesh = new Mesh(geometry, material);
-      (this.scene as Scene).add(this.mesh);
+      this.plotSpheres();
+
+      // const geometry = new BoxGeometry(0.2, 0.2, 0.2);
+      // const material = new MeshNormalMaterial();
+
+      // this.mesh = new Mesh(geometry, material);
+      // (this.scene as Scene).add(this.mesh);
 
       this.renderer = new WebGLRenderer({ antialias: true });
       (this.renderer as WebGLRenderer).setSize(container.clientWidth, container.clientHeight);
@@ -75,7 +85,7 @@ export default Vue.extend({
         70,
         container.clientWidth / container.clientHeight,
         0.01,
-        10,
+        10000,
       );
       (this.camera as PerspectiveCamera).position.z = 1;
     },
@@ -85,16 +95,39 @@ export default Vue.extend({
         this.camera as PerspectiveCamera,
         container,
       );
+      this.controls.maxDistance = 100;
+      this.controls.minDistance = 1;
     },
 
     createScene() {
       this.scene = new Scene();
     },
 
+    createSkyBox() {
+      const skybox = createSkyBoxMesh();
+      (this.scene as Scene).add(skybox);
+    },
+
+    plotSpheres() {
+      const tracks: Array<Track> = Object.values(this.getTracks);
+
+      for (let i = 0; i < tracks.length; i += 1) {
+        const geometry = new SphereGeometry(
+          0.2,
+          5,
+          2,
+        );
+        const material = new MeshNormalMaterial();
+        const mesh = new Mesh(geometry, material);
+        mesh.position.x = tracks[i].audioFeatures.acousticness * 100;
+        mesh.position.y = tracks[i].audioFeatures.danceability * 100;
+        mesh.position.z = tracks[i].audioFeatures.valence * 100;
+        (this.scene as Scene).add(mesh);
+      }
+    },
+
     animate() {
       requestAnimationFrame(this.animate);
-      (this.mesh as Mesh).rotation.x += 0.01;
-      (this.mesh as Mesh).rotation.y += 0.02;
       // eslint-disable-next-line max-len
       (this.renderer as WebGLRenderer).render((this.scene as Scene), (this.camera as PerspectiveCamera));
     },

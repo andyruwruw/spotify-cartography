@@ -19,5 +19,6 @@ module.exports = {
     'no-await-in-loop': 'off',
     'no-param-reassign': 'off',
     'vue/no-side-effects-in-computed-properties': 'off',
+    'import/prefer-default-export': 'off',
   },
 };
