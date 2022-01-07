@@ -16,6 +16,7 @@ const defaultState = (): AuthModuleState => ({
 });
 
 const getters: GetterTree<AuthModuleState, any> = {
+  isAuthenticated: (state) => state.accessToken && state.accessToken.length > 0,
   getAccessToken: (state) => state.accessToken,
 };
 

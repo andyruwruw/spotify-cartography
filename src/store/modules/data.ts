@@ -5,37 +5,57 @@ import {
   MutationTree,
 } from 'vuex';
 
-export interface AuthModuleState {
-  accessToken: string;
+export interface Track {
+  id: string;
+  name: string;
+  artist: string;
+  image: string;
 }
 
-const defaultState = (): AuthModuleState => ({
-  accessToken: '',
+export interface DataModuleState {
+  progress: number;
+  tracks: Record<string, Track>;
+  graph: Array<Array<number>>;
+}
+
+const defaultState = (): DataModuleState => ({
+  progress: 0,
+  tracks: {},
+  graph: [],
 });
 
-const getters: GetterTree<AuthModuleState, any> = {
-  getAccessToken: (state) => state.accessToken,
-};
-
-const mutations: MutationTree<AuthModuleState> = {
-  setAccessToken(state, accessToken: string) {
-    state.accessToken = accessToken;
+const getters: GetterTree<DataModuleState, any> = {
+  getProgress: (state) => state.progress,
+  getTracks(state): Record<string, Track> {
+    return state.tracks;
+  },
+  getTrack(state, id): Track {
+    return state.tracks[id];
+  },
+  getGraph(state) {
+    return state.graph;
   },
 };
 
-const actions: ActionTree<AuthModuleState, any> = {
-  login(context) {
-    console.log('login');
+const mutations: MutationTree<DataModuleState> = {
+  setProgress(state, progress: number) {
+    state.progress = progress;
   },
-  callback(context) {
-    console.log('callback');
+  setTracks(state, tracks: Record<string, Track>) {
+    state.tracks = tracks;
   },
-  logout(context) {
-    console.log('logout');
+  setGraph(state, graph: Array<Array<number>>) {
+    state.graph = graph;
   },
 };
 
-const module: Module<AuthModuleState, Record<string, any>> = {
+const actions: ActionTree<DataModuleState, any> = {
+  collectData({ commit, dispatch }) {
+    console.log('COLLECTING');
+  },
+};
+
+const module: Module<DataModuleState, Record<string, any>> = {
   namespaced: true,
   state: defaultState(),
   getters,
