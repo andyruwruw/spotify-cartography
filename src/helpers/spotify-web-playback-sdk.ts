@@ -1,6 +1,7 @@
 export interface WindowWithPlayer extends Window {
   onSpotifyWebPlaybackSDKReady: () => null | undefined;
   Spotify: any;
+  setPlayer: (player: any) => void;
 }
 
 (window as unknown as WindowWithPlayer).onSpotifyWebPlaybackSDKReady = () => null;
@@ -24,3 +25,7 @@ export const waitUntilUserHasSelectedPlayer = async (sdk: any) => new Promise((r
     }
   });
 });
+
+export const setPlayer = (player: any): void => {
+  (window as unknown as WindowWithPlayer).setPlayer(player);
+};

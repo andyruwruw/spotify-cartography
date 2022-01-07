@@ -1,14 +1,20 @@
 import SpotifyApi from 'spotify-web-api-node';
 
 import {
+  REDIRECT_URL,
   SCOPES,
+  SPOTIFY_BASE_AUTH_URL,
+  SPOTIFY_CLIENT_ID,
   STATE,
   MARKET,
 } from '@/config';
 
 const spotifyApi = new SpotifyApi();
 
-const getAuthorizeUrl = (): string => spotifyApi.createAuthorizeURL(SCOPES, STATE);
+const setAccessToken = (accessToken: string) => spotifyApi.setAccessToken(accessToken);
+
+// eslint-disable-next-line max-len
+const getAuthorizeUrl = (): string => `${SPOTIFY_BASE_AUTH_URL}?response_type=token&client_id=${SPOTIFY_CLIENT_ID}&scope=${SCOPES.join('%20')}&redirect_uri=${encodeURIComponent(REDIRECT_URL)}&state=${STATE}`;
 
 const getSavedTracks = async (offset = 0, limit = 50) => spotifyApi.getMySavedTracks({
   market: MARKET,
@@ -33,6 +39,7 @@ const transferUsersPlayback = async (deviceIds: string[], play: boolean) => spot
 export default {
   auth: {
     getAuthorizeUrl,
+    setAccessToken,
   },
   library: {
     getSavedTracks,

@@ -5,8 +5,6 @@ import {
   MutationTree,
 } from 'vuex';
 
-import api from '@/api';
-
 export interface AuthModuleState {
   accessToken: string;
 }
@@ -27,23 +25,11 @@ const mutations: MutationTree<AuthModuleState> = {
 
 const actions: ActionTree<AuthModuleState, any> = {
   login(context) {
-    const url = api.spotify.auth.getAuthorizeUrl();
-
-    window.location.href = url;
+    console.log('login');
   },
-
-  callback({ commit, dispatch }, accessToken) {
-    commit('setAccessToken', accessToken);
-
-    api.spotify.auth.setAccessToken(accessToken);
-
-    dispatch(
-      'player/initialize',
-      null,
-      { root: true },
-    );
+  callback(context) {
+    console.log('callback');
   },
-
   logout(context) {
     console.log('logout');
   },

@@ -8,6 +8,7 @@ import {
 import {
   waitForSpotifyWebPlaybackSDKToLoad,
   waitUntilUserHasSelectedPlayer,
+  setPlayer,
 } from '@/helpers/spotify-web-playback-sdk';
 import api from '@/api';
 
@@ -57,20 +58,28 @@ interface WebPlaybackState{
 }
 
 interface PlayerModuleState {
+  deviceId: string | null;
   track: WebPlaybackTrack | null;
 }
 
 const defaultState = (): PlayerModuleState => ({
+  deviceId: null,
   track: null,
 });
 
 const getters: GetterTree<PlayerModuleState, any> = {
+  getDeviceId(state) {
+    return state.deviceId;
+  },
   getTrack(state) {
     return state.track;
   },
 };
 
 const mutations: MutationTree<PlayerModuleState> = {
+  setDeviceId(state, deviceId) {
+    state.deviceId = deviceId;
+  },
   setTrack(state, track: WebPlaybackTrack) {
     state.track = track;
   },
@@ -89,9 +98,7 @@ const actions: ActionTree<PlayerModuleState, any> = {
 
       const player = new Player({
         name: 'Spotify Cartographer',
-        getOAuthToken: (cb: (accessToken: string) => void) => {
-          cb(token);
-        },
+        getOAuthToken: (cb: (arg0: any) => any) => cb(token),
       });
 
       player.addListener('initialization_error', (event: Record<string, string>) => {
@@ -117,7 +124,7 @@ const actions: ActionTree<PlayerModuleState, any> = {
       });
 
       player.addListener('ready', (event: Record<string, string>) => {
-        commit('setDeviceID', event.device_id);
+        commit('setDeviceId', event.device_id);
 
         api.spotify.playback.transferUsersPlayback([event.device_id], true);
       });
@@ -129,7 +136,7 @@ const actions: ActionTree<PlayerModuleState, any> = {
       const connected = await player.connect();
 
       if (connected) {
-        await waitUntilUserHasSelectedPlayer(player);
+        // await waitUntilUserHasSelectedPlayer(player);
       }
     })();
   },

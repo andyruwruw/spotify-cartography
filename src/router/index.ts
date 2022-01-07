@@ -26,6 +26,11 @@ const routes: Array<RouteConfig> = [
     name: 'Callback',
     component: () => import('@/views/Callback.vue'),
   },
+  {
+    path: '/exploring',
+    name: 'Exploring',
+    component: () => import('@/views/Exploring.vue'),
+  },
 ];
 
 const router = new VueRouter({

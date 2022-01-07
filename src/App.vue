@@ -2,9 +2,13 @@
   <v-app>
     <v-app-bar
       app
-      color="primary"
-      dark>
+      color="transparent"
+      dark
+      flat>
       <div class="d-flex align-center">
+        <span>
+          Spotify Cartography
+        </span>
       </div>
 
       <v-spacer></v-spacer>
@@ -12,8 +16,7 @@
       <v-btn
         href="https://github.com/vuetifyjs/vuetify/releases/latest"
         target="_blank"
-        text
-      >
+        text>
         <span class="mr-2">Latest Release</span>
         <v-icon>mdi-open-in-new</v-icon>
       </v-btn>
