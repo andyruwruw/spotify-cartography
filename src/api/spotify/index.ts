@@ -9,6 +9,10 @@ import {
   MARKET,
 } from '@/config';
 
+export interface Response<T> {
+  body: T;
+}
+
 const spotifyApi = new SpotifyApi();
 
 const setAccessToken = (accessToken: string) => spotifyApi.setAccessToken(accessToken);
@@ -16,7 +20,7 @@ const setAccessToken = (accessToken: string) => spotifyApi.setAccessToken(access
 // eslint-disable-next-line max-len
 const getAuthorizeUrl = (): string => `${SPOTIFY_BASE_AUTH_URL}?response_type=token&client_id=${SPOTIFY_CLIENT_ID}&scope=${SCOPES.join('%20')}&redirect_uri=${encodeURIComponent(REDIRECT_URL)}&state=${STATE}`;
 
-const getSavedTracks = async (offset = 0, limit = 50) => spotifyApi.getMySavedTracks({
+const getSavedTracks = async (offset = 0, limit = 50): Promise<Response<SpotifyApi.UsersSavedTracksResponse>> => spotifyApi.getMySavedTracks({
   market: MARKET,
   limit,
   offset,

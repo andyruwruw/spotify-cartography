@@ -8,6 +8,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import { mapGetters, mapActions } from 'vuex';
 import {
   PerspectiveCamera,
   Scene,
@@ -15,7 +16,9 @@ import {
   MeshNormalMaterial,
   Mesh,
   WebGLRenderer,
+  SphereGeometry,
 } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 export default Vue.extend({
   name: 'Cartography',
@@ -24,22 +27,37 @@ export default Vue.extend({
     camera: null as PerspectiveCamera | null,
     scene: null as Scene | null,
     renderer: null as WebGLRenderer | null,
+    controls: null as OrbitControls | null,
     mesh: null as Mesh | null,
   }),
 
+  computed: {
+    ...mapGetters('data', [
+      'getTracks',
+      'getGraph',
+    ]),
+  },
+
+  mounted() {
+    this.initialize();
+    this.animate();
+
+    window.addEventListener('resize', this.resize);
+  },
+
   methods: {
+    ...mapActions('data', [
+      'processData',
+    ]),
+
     initialize() {
       const container = document.getElementById('container') as HTMLElement;
 
-      this.camera = new PerspectiveCamera(
-        70,
-        container.clientWidth / container.clientHeight,
-        0.01,
-        10,
-      );
-      (this.camera as PerspectiveCamera).position.z = 1;
+      this.createCamera(container);
 
-      this.scene = new Scene();
+      this.createControls(container);
+
+      this.createScene();
 
       const geometry = new BoxGeometry(0.2, 0.2, 0.2);
       const material = new MeshNormalMaterial();
@@ -51,6 +69,28 @@ export default Vue.extend({
       (this.renderer as WebGLRenderer).setSize(container.clientWidth, container.clientHeight);
       container.appendChild(this.renderer.domElement);
     },
+
+    createCamera(container: HTMLElement) {
+      this.camera = new PerspectiveCamera(
+        70,
+        container.clientWidth / container.clientHeight,
+        0.01,
+        10,
+      );
+      (this.camera as PerspectiveCamera).position.z = 1;
+    },
+
+    createControls(container: HTMLElement) {
+      this.controls = new OrbitControls(
+        this.camera as PerspectiveCamera,
+        container,
+      );
+    },
+
+    createScene() {
+      this.scene = new Scene();
+    },
+
     animate() {
       requestAnimationFrame(this.animate);
       (this.mesh as Mesh).rotation.x += 0.01;
@@ -58,11 +98,12 @@ export default Vue.extend({
       // eslint-disable-next-line max-len
       (this.renderer as WebGLRenderer).render((this.scene as Scene), (this.camera as PerspectiveCamera));
     },
-  },
 
-  mounted() {
-    this.initialize();
-    this.animate();
+    resize() {
+      const container = document.getElementById('container') as HTMLElement;
+
+      (this.renderer as WebGLRenderer).setSize(container.clientWidth, container.clientHeight);
+    },
   },
 });
 </script>
