@@ -14,6 +14,7 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import { mapActions } from 'vuex';
 import {
   Camera,
   Line,
@@ -59,6 +60,10 @@ export default Vue.extend({
   }),
 
   methods: {
+    ...mapActions('data', [
+      'loadExampleData',
+    ]),
+
     trackMouse(e: MouseEvent) {
       this.mouse.x = e.clientX;
       this.mouse.y = e.clientY;
@@ -209,6 +214,9 @@ export default Vue.extend({
     handleClick() {
       if (this.hoverLogin) {
         this.login();
+      } if (this.hoverExample) {
+        this.loadExampleData();
+        this.$router.push('/cartography');
       }
     },
 

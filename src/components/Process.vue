@@ -15,6 +15,7 @@
           dark
           dense
           thumb-label
+          :disabled="disableSliders"
           @end="changeSettings">
           <template v-slot:append>
             <v-text-field
@@ -24,6 +25,7 @@
               single-line
               type="number"
               style="width: 60px"
+              :disabled="disableSliders"
               @change="changeSettings" />
           </template>
         </v-slider>
@@ -34,6 +36,7 @@
           :label="epsilon.label"
           :max="epsilon.max"
           :min="epsilon.min"
+          :disabled="disableSliders"
           dark
           dense
           thumb-label
@@ -41,6 +44,7 @@
           <template v-slot:append>
             <v-text-field
               v-model="epsilon.val"
+              :disabled="disableSliders"
               class="mt-0 pt-0"
               hide-details
               single-line
@@ -56,6 +60,7 @@
           :label="iterations.label"
           :max="iterations.max"
           :min="iterations.min"
+          :disabled="disableSliders"
           dark
           dense
           thumb-label
@@ -63,6 +68,7 @@
           <template v-slot:append>
             <v-text-field
               v-model="iterations.val"
+              :disabled="disableSliders"
               class="mt-0 pt-0"
               hide-details
               single-line
@@ -73,12 +79,24 @@
         </v-slider>
       </div>
 
-      <v-btn
-        color="red"
-        dark
-        @click="run">
-        Run
-      </v-btn>
+      <div :class="$style.buttons">
+        <v-btn
+          color="red"
+          dark
+          width="71px"
+          @click="run">
+          {{ isProcessDone ? 'Run' : 'Stop' }}
+        </v-btn>
+
+        <v-btn
+          v-if="isProcessDone"
+          color="blue"
+          dark
+          width="71px"
+          @click="save">
+          Save
+        </v-btn>
+      </div>
     </div>
   </div>
 </template>
@@ -121,7 +139,15 @@ export default Vue.extend({
       'getTracks',
       'getIterations',
       'getCurrentIteration',
+      'isProcessDone',
     ]),
+
+    disableSliders() {
+      if (!this.isProcessDone) {
+        return true;
+      }
+      return false;
+    },
   },
 
   created() {
@@ -134,6 +160,8 @@ export default Vue.extend({
   methods: {
     ...mapActions('data', [
       'processData',
+      'abort',
+      'save',
     ]),
 
     changeSettings() {
@@ -145,7 +173,11 @@ export default Vue.extend({
     },
 
     run() {
-      this.processData();
+      if (this.isProcessDone) {
+        this.processData();
+      } else {
+        this.abort();
+      }
     },
   },
 });
@@ -173,6 +205,14 @@ export default Vue.extend({
 
 .sliders {
   width: calc(100% - 36px - 2rem - 2rem);
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  height: 90px;
+  justify-content: space-between;
 }
 
 @keyframes slide-in {

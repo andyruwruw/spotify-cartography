@@ -113,14 +113,16 @@ export default Vue.extend<IData, IMethods, IComputed>({
   },
 
   async mounted() {
-    if (!this.isAuthenticated) {
+    if (!this.isAuthenticated && this.getTracks.length === 0) {
       this.$router.push('/');
     }
     if (this.getTracks.length === 0) {
       this.$router.push('/explore');
     }
 
-    await this.$store.dispatch('data/firstProcess');
+    if (this.isAuthenticated) {
+      await this.$store.dispatch('data/firstProcess');
+    }
 
     await this.initialize();
     this.animate();
@@ -132,7 +134,6 @@ export default Vue.extend<IData, IMethods, IComputed>({
   watch: {
     timeToReset() {
       if (this.isProcessDone) {
-        console.log('process finished');
         this.addPoints();
       }
     },
@@ -180,13 +181,19 @@ export default Vue.extend<IData, IMethods, IComputed>({
 
       // Add new points.
       for (let i = 0; i < this.getGraph.length; i += 1) {
-        this.points.push(addPointMeshToScene(
-          this.scene as Scene,
-          (this.getGraph[i][0] / largestValue) * multiplier,
-          (this.getGraph[i][1] / largestValue) * multiplier,
-          (this.getGraph[i][2] / largestValue) * multiplier,
-          getColor((this.getTracks[i].added - first) / (last - first)),
-        ));
+        if (this.getTracks[i] !== undefined) {
+          let color = getColor(1.0);
+          if ('added' in this.getTracks[i]) {
+            color = getColor((this.getTracks[i].added - first) / (last - first));
+          }
+          this.points.push(addPointMeshToScene(
+            this.scene as Scene,
+            (this.getGraph[i][0] / largestValue) * multiplier,
+            (this.getGraph[i][1] / largestValue) * multiplier,
+            (this.getGraph[i][2] / largestValue) * multiplier,
+            color,
+          ));
+        }
       }
     },
 

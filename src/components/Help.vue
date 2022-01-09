@@ -174,13 +174,14 @@ export default Vue.extend({
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 20rem;
+    width: calc(30% - 2rem);
     margin-top: 1rem;
 
     .text {
       display: flex;
       flex-direction: column;
       margin-left: 1rem;
+      width: 100%;
 
       .headline {
         font-size: 1.2rem;

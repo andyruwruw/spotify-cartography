@@ -13,6 +13,8 @@ import {
   getTracksAudioFeatures,
   Track,
 } from '@/helpers/spotify';
+import { downloadJson } from '@/helpers/file';
+// import { DATA as ALL_10_1050 } from '@/assets/examples/all-10-1050';
 
 export interface DataModuleState {
   progress: number;
@@ -29,6 +31,7 @@ export interface DataModuleState {
   currentIteration: number;
   processDone: boolean;
   update: number;
+  abort: boolean;
 }
 
 const defaultState = (): DataModuleState => ({
@@ -46,6 +49,7 @@ const defaultState = (): DataModuleState => ({
   currentIteration: 1,
   processDone: true,
   update: 1,
+  abort: false,
 });
 
 const getters: GetterTree<DataModuleState, any> = {
@@ -83,6 +87,9 @@ const getters: GetterTree<DataModuleState, any> = {
   },
   getUpdate(state): number {
     return state.update;
+  },
+  isAbort(state): boolean {
+    return state.abort;
   },
 };
 
@@ -127,6 +134,9 @@ const mutations: MutationTree<DataModuleState> = {
   bumpUpdate(state) {
     state.update = (state.update + 1) % 100;
   },
+  setAbort(state, abort: boolean) {
+    state.abort = abort;
+  },
 };
 
 const actions: ActionTree<DataModuleState, any> = {
@@ -140,6 +150,8 @@ const actions: ActionTree<DataModuleState, any> = {
     // && i < 500
     let last = 0;
     let first = Date.now();
+
+    // && i < 1000 For when things get scary...
 
     for (let i = 0; i < total && i < 1000; i += 50) {
       const savedTracks = await getSavedTracks(i);
@@ -222,7 +234,11 @@ const actions: ActionTree<DataModuleState, any> = {
   },
 
   async step({ commit, rootGetters, dispatch }, { iteration }) {
-    if (iteration === rootGetters['data/getIterations']) {
+    if (iteration === rootGetters['data/getIterations'] || rootGetters['data/isAbort']) {
+      if (rootGetters['data/isAbort']) {
+        commit('setAbort', false);
+      }
+
       const graph = rootGetters['data/getTSNE'].getSolution();
       commit('setGraph', graph);
 
@@ -242,6 +258,32 @@ const actions: ActionTree<DataModuleState, any> = {
     }
 
     setTimeout(() => dispatch('step', { iteration: iteration + 1 }), 0);
+  },
+
+  abort({ commit }) {
+    commit('setAbort', true);
+  },
+
+  async save({ rootGetters }) {
+    const graph = rootGetters['data/getGraph'];
+    const tracks = rootGetters['data/getTracks'];
+
+    const data = {
+      graph,
+      tracks,
+    };
+
+    downloadJson(data, 'data.json');
+  },
+
+  loadExampleData({ commit }) {
+    console.log('hi');
+    // commit('setTracks', ALL_10_1050.tracks);
+    // commit('setGraph', ALL_10_1050.graph);
+
+    // commit('setPerplexity', Math.round(ALL_10_1050.graph.length ** 0.5));
+    // commit('setEpsilon', 10);
+    // commit('setIterations', 1050);
   },
 };
 
