@@ -1,24 +1,3 @@
-# spotify-cartography
+# Spotify Cartography
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Explore your Spotify library in a 3D space with simular songs grouped based on their happiness, energy, danceability and more variables. Uses T-SNE and Three.js.
