@@ -1,8 +1,13 @@
 <template>
-  <div>
+  <div :class="$style.component">
     <div
       :class="$style.container"
-      id="container" />
+      id="container"
+      @click.ctrl="handleClick" />
+
+    <player
+      :display="hovered !== -1 || playing !== -1"
+      :track="hovered !== -1 || playing !== -1 ? getTracks[hovered !== -1 ? hovered : playing] : null" />
   </div>
 </template>
 
@@ -12,43 +17,78 @@ import { mapGetters, mapActions } from 'vuex';
 import {
   PerspectiveCamera,
   Scene,
-  BoxGeometry,
-  MeshNormalMaterial,
   Mesh,
   WebGLRenderer,
-  TextureLoader,
-  SphereGeometry,
+  Vector2,
+  Raycaster,
+  sRGBEncoding,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 
 import {
-  createSkyBoxMesh,
-} from '@/helpers/skybox';
-import { Track } from '@/helpers/spotify';
+  addAmbientLightToScene,
+  addPointLightToScene,
+  addPointMeshToScene,
+  createOrbitControls,
+  createPerspectiveCamera,
+  createRenderer,
+  createScene,
+  getColor,
+  getContainer,
+} from '@/helpers/three';
+import Player from '@/components/Player.vue';
 
 export default Vue.extend({
   name: 'Cartography',
+
+  components: {
+    Player,
+  },
 
   data: () => ({
     camera: null as PerspectiveCamera | null,
     scene: null as Scene | null,
     renderer: null as WebGLRenderer | null,
     controls: null as OrbitControls | null,
-    mesh: null as Mesh | null,
+    mouse: new Vector2(0, 0),
+    points: [] as Mesh[],
+    raycaster: null as Raycaster | null,
+    hovered: -1 as number,
+    playing: -1 as number,
   }),
 
   computed: {
     ...mapGetters('data', [
       'getTracks',
       'getGraph',
+      'getFirstAndLast',
+    ]),
+    ...mapGetters('auth', [
+      'isAuthenticated',
     ]),
   },
 
-  mounted() {
-    this.initialize();
+  async mounted() {
+    if (!this.isAuthenticated) {
+      this.$router.push('/');
+    }
+    if (this.getTracks.length === 0) {
+      this.$router.push('/explore');
+    }
+
+    await this.$store.dispatch('data/firstProcess');
+
+    await this.initialize();
     this.animate();
 
     window.addEventListener('resize', this.resize);
+    window.addEventListener('mousemove', this.trackMouse);
+  },
+
+  watch: {
+    getGraph() {
+      this.addPoints();
+    },
   },
 
   methods: {
@@ -56,78 +96,81 @@ export default Vue.extend({
       'processData',
     ]),
 
-    initialize() {
-      const container = document.getElementById('container') as HTMLElement;
-
-      this.createCamera(container);
-
-      this.createControls(container);
-
-      this.createScene();
-
-      this.createSkyBox();
-
-      this.plotSpheres();
-
-      // const geometry = new BoxGeometry(0.2, 0.2, 0.2);
-      // const material = new MeshNormalMaterial();
-
-      // this.mesh = new Mesh(geometry, material);
-      // (this.scene as Scene).add(this.mesh);
-
-      this.renderer = new WebGLRenderer({ antialias: true });
-      (this.renderer as WebGLRenderer).setSize(container.clientWidth, container.clientHeight);
-      container.appendChild(this.renderer.domElement);
+    handleClick() {
+      if (this.hovered !== -1) {
+        this.$store.dispatch('player/play', this.getTracks[this.hovered].id);
+        this.playing = this.hovered;
+      }
     },
 
-    createCamera(container: HTMLElement) {
-      this.camera = new PerspectiveCamera(
-        70,
-        container.clientWidth / container.clientHeight,
-        0.01,
-        10000,
-      );
-      (this.camera as PerspectiveCamera).position.z = 1;
+    addPoints() {
+      if (!this.getGraph.length || this.renderer === null) {
+        return;
+      }
+
+      // Remove all old points.
+      for (let i = 0; i < this.points.length; i += 1) {
+        (this.scene as Scene).remove(this.points[i]);
+      }
+
+      const firstAndLast = this.getFirstAndLast as number[];
+      const first = firstAndLast[0];
+      const last = firstAndLast[1];
+
+      // Add new points.
+      for (let i = 0; i < this.getGraph.length; i += 1) {
+        this.points.push(addPointMeshToScene(
+          this.scene as Scene,
+          this.getGraph[i][0] * 10000,
+          this.getGraph[i][1] * 10000,
+          this.getGraph[i][2] * 10000,
+          getColor((this.getTracks[i].added - first) / (last - first)),
+        ));
+      }
     },
 
-    createControls(container: HTMLElement) {
-      this.controls = new OrbitControls(
-        this.camera as PerspectiveCamera,
-        container,
-      );
-      this.controls.maxDistance = 100;
-      this.controls.minDistance = 1;
+    trackMouse(e: MouseEvent) {
+      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     },
 
-    createScene() {
-      this.scene = new Scene();
-    },
+    async initialize() {
+      const container = (getContainer() as HTMLElement);
+      this.raycaster = new Raycaster();
+      this.camera = createPerspectiveCamera(container);
+      this.scene = createScene();
+      this.controls = createOrbitControls(this.camera, container);
 
-    createSkyBox() {
-      const skybox = createSkyBoxMesh();
-      (this.scene as Scene).add(skybox);
-    },
+      addPointLightToScene(this.scene);
+      addAmbientLightToScene(this.scene);
 
-    plotSpheres() {
-      const tracks: Array<Track> = Object.values(this.getTracks);
+      this.renderer = createRenderer(container);
+      this.renderer.outputEncoding = sRGBEncoding;
 
-      for (let i = 0; i < tracks.length; i += 1) {
-        const geometry = new SphereGeometry(
-          0.2,
-          5,
-          2,
-        );
-        const material = new MeshNormalMaterial();
-        const mesh = new Mesh(geometry, material);
-        mesh.position.x = tracks[i].audioFeatures.acousticness * 100;
-        mesh.position.y = tracks[i].audioFeatures.danceability * 100;
-        mesh.position.z = tracks[i].audioFeatures.valence * 100;
-        (this.scene as Scene).add(mesh);
+      if (this.getGraph.length && !this.points.length) {
+        this.addPoints();
       }
     },
 
     animate() {
       requestAnimationFrame(this.animate);
+
+      (this.raycaster as Raycaster).setFromCamera(this.mouse, this.camera as PerspectiveCamera);
+      const intersections = (this.raycaster as Raycaster).intersectObjects(this.points);
+
+      if (intersections.length) {
+        const { uuid } = intersections[0].object;
+
+        for (let i = 0; i < this.points.length; i += 1) {
+          if (this.points[i].uuid === uuid) {
+            this.hovered = i;
+            break;
+          }
+        }
+      } else {
+        this.hovered = -1;
+      }
+
       // eslint-disable-next-line max-len
       (this.renderer as WebGLRenderer).render((this.scene as Scene), (this.camera as PerspectiveCamera));
     },
@@ -149,5 +192,202 @@ export default Vue.extend({
   width: 100vw;
   height: 100vh;
   display: block;
+}
+
+.player {
+  display: flex;
+  position: fixed;
+  width: 100vw;
+  height: 120px;
+  justify-content: space-between;
+  bottom: 0;
+  left: 0;
+  background: #222230c0;
+  padding: 30px 24px;
+
+  .song {
+    display: flex;
+    height: 60px;
+    align-items: center;
+
+    .image {
+      display: block;
+      width: 80px;
+      height: 80px;
+      background-size: cover;
+      background-position: center center;
+      margin-right: 1rem;
+      animation: fadein 0.5s ease-in-out 0.5s;
+    }
+
+    .details {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+      max-width: 20rem;
+      animation: fadein .4s;
+
+      span {
+        max-width: 100%;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+      }
+
+      .title {
+        font-size: 1.5rem;
+      }
+
+      .artists {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.466);
+      }
+    }
+  }
+
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: calc(100vw - 60px - 48px - 21rem);
+    padding: 0 5rem;
+
+    .stat-column {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      height: 100%;
+
+      .stat {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: .6rem;
+
+        &.valence {
+          .label {
+            color: rgb(255, 196, 1);
+          }
+
+          .bar .fill {
+            background-color: rgb(255, 196, 1);
+          }
+        }
+
+        &.danceability {
+          .label {
+            color: rgb(187, 74, 253);
+          }
+
+          .bar .fill {
+            background-color: rgb(187, 74, 253);
+          }
+        }
+
+        &.energy {
+          .label {
+            color: rgb(1, 162, 255);
+          }
+
+          .bar .fill {
+            background-color: rgb(1, 162, 255);
+          }
+        }
+
+        &.acousticness {
+          .label {
+            color: rgb(248, 91, 91);
+          }
+
+          .bar .fill {
+            background-color: rgb(248, 91, 91);
+          }
+        }
+
+        &.liveness {
+          .label {
+            color: rgb(159, 255, 121);
+          }
+
+          .bar .fill {
+            background-color: rgb(159, 255, 121);
+          }
+        }
+
+        &.speechiness {
+          .label {
+            color: rgb(255, 82, 241);
+          }
+
+          .bar .fill {
+            background-color: rgb(255, 82, 241);
+          }
+        }
+
+        &.instrumentalness {
+          .label {
+            color: rgb(65, 255, 214);
+          }
+
+          .bar .fill {
+            background-color: rgb(65, 255, 214);
+          }
+        }
+
+        &.tempo {
+          .label {
+            color: rgb(240, 124, 70);
+          }
+
+          .bar .fill {
+            background-color: rgb(240, 124, 70);
+          }
+        }
+
+        &.popularity {
+          .label {
+            color: rgb(230, 245, 100);
+          }
+
+          .bar .fill {
+            background-color: rgb(230, 245, 100);
+          }
+        }
+
+        .bar {
+          display: flex;
+          width: 150px;
+          height: .2rem;
+          border-radius: 1px;
+          background-color: rgba(255, 255, 255, 0.178);
+
+          .fill {
+            display: block;
+            height: 100%;
+            background-color: red;
+            transition: width .5s ease-in-out;
+          }
+        }
+
+        .label {
+          margin: .1rem 0 .2rem;
+          font-size: 1rem;
+          color: rgba(255, 255, 255, 0.466);
+        }
+      }
+    }
+  }
+}
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 </style>

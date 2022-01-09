@@ -3,3 +3,5 @@ declare module 'vuetify/lib/framework' {
 
   export default Vuetify;
 }
+
+declare module '@keckelt/tsne-js';

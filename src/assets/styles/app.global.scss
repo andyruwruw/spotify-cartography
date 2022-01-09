@@ -14,11 +14,11 @@ h4 {
   background: #191927;
 }
 
-.v-app-bar {
-  opacity: 0;
-  transition: opacity 0.3s;
-
-  &:hover {
-    opacity: 1;
-  }
+#container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  display: block;
 }

@@ -1,15 +1,6 @@
 <template>
   <div :class="$style.component">
-    <div :class="$style.samples">
-      <div
-        v-for="track in getProgressSample"
-        :key="track.id"
-        :class="$style.image"
-        :style="{
-          'background-image': `url('${track.image}')`,
-        }" />
-    </div>
-
+    <div id="container" />
     <div :class="$style.content">
       <h1 v-if="showTitle">
         {{ message }}
@@ -29,8 +20,52 @@
 <script lang="ts">
 import Vue from 'vue';
 import { mapGetters } from 'vuex';
+import {
+  Camera,
+  Mesh,
+  Scene,
+  WebGLRenderer,
+} from 'three';
+import {
+  addAmbientLightToScene,
+  addDirectionLightToScene,
+  addPointMeshToScene,
+  applyFog,
+  createOrthographicCamera,
+  createRenderer,
+  createScene,
+  getContainer,
+} from '@/helpers/three';
+import { Track } from '@/helpers/spotify';
 
-export default Vue.extend({
+interface IData {
+  showTitle: boolean;
+  start: number;
+  lastUpdate: number;
+  messageIndex: number;
+  messages: string[];
+  camera: null | Camera;
+  scene: null | Scene;
+  renderer: null | WebGLRenderer;
+  points: Mesh[];
+}
+
+interface IComputed {
+  isAuthenticated: boolean;
+  getProgress: number;
+  getProgressSample: Track[];
+  isDone: boolean;
+  progressUpdate: string;
+  message: string;
+}
+
+interface IMethods {
+  generateRandomPoints: () => void;
+  initialize: () => void;
+  animate: () => void;
+}
+
+export default Vue.extend<IData, IMethods, IComputed>({
   name: 'Exploring',
 
   data: () => ({
@@ -40,23 +75,75 @@ export default Vue.extend({
     messageIndex: 0,
     messages: [
       'please wait while the little elves draw your map',
-      'the server is powered by a lemon and two electrodes',
+      'powered by a lemon and two electrodes',
       'we\'re testing your patience',
       'following the white rabbit',
       'why don\'t you order a sandwich?',
       'the bits are flowing slowly today',
-      'dig on the \'X\' for buried treasure...',
-      'my other loading screen is much faster.',
-      '(insert quarter)',
+      'dig on the x for buried treasure',
+      'my other loading screen is much faster',
+      'insert quarter',
       'are we there yet?',
-      'just count to 10',
-      'counting backwards from Infinity',
+      'just count to ten',
+      'counting backwards from infinity',
       'waiting for the cows to cross the road',
-      'time flies when you’re having fun.',
-      'convincing AI not to turn evil...',
+      'time flies when you’re having fun',
+      'convincing ai not to turn evil',
       'twiddling thumbs',
     ],
+    camera: null as Camera | null,
+    scene: null as Scene | null,
+    renderer: null as WebGLRenderer | null,
+    points: [] as Mesh[],
   }),
+
+  methods: {
+    generateRandomPoints() {
+      const xRandom = 2.4;
+      const yRandom = 1.4;
+      const zRandom = 10;
+      const zMin = -10;
+
+      for (let i = 0; i < 50; i += 1) {
+        this.points.push(addPointMeshToScene(
+          this.scene as Scene,
+          Math.random() * xRandom - (xRandom / 2),
+          Math.random() * yRandom - (yRandom / 2),
+          Math.random() * zRandom - (zRandom / 2) + zMin,
+        ));
+      }
+    },
+
+    initialize() {
+      const container = (getContainer() as HTMLElement);
+      this.camera = createOrthographicCamera(container);
+      this.scene = createScene();
+      applyFog(this.scene);
+      this.generateRandomPoints();
+
+      addDirectionLightToScene(this.scene);
+      addAmbientLightToScene(this.scene);
+
+      this.renderer = createRenderer(container);
+
+      this.animate();
+    },
+
+    animate() {
+      requestAnimationFrame(this.animate);
+
+      for (let i = 0; i < this.points.length; i += 1) {
+        const point = this.points[i];
+        point.rotation.x += Math.random() * 0.04;
+        point.rotation.y += Math.random() * 0.04;
+        point.position.x += Math.sin((this.start - Date.now()) / 1000 + i) / 5000;
+        point.position.y += Math.sin((this.start - Date.now()) / 1000 + i) / 5000;
+      }
+
+      // eslint-disable-next-line max-len
+      (this.renderer as WebGLRenderer).render((this.scene as Scene), this.camera as Camera);
+    },
+  },
 
   computed: {
     ...mapGetters('auth', [
@@ -65,27 +152,13 @@ export default Vue.extend({
     ...mapGetters('data', [
       'getProgress',
       'getProgressSample',
+      'isDone',
     ]),
     progressUpdate() {
       return `${Math.round(this.getProgress * 100)}%`;
     },
     message() {
       return this.messages[this.messageIndex];
-    },
-  },
-
-  watch: {
-    progressUpdate() {
-      if (this.getProgress >= 1) {
-        this.$router.push('/cartography');
-      }
-      if (Date.now() - this.lastUpdate > 5000) {
-        this.showTitle = false;
-        this.lastUpdate = Date.now();
-        this.messageIndex += 1;
-        this.messageIndex %= this.messages.length;
-        this.showTitle = true;
-      }
     },
   },
 
@@ -99,6 +172,32 @@ export default Vue.extend({
       this.$store.dispatch('data/collectData');
     }
   },
+
+  async mounted() {
+    await this.initialize();
+    this.animate();
+  },
+
+  watch: {
+    progressUpdate() {
+      if (this.getProgress >= 1 || this.isDone) {
+        this.$router.push('/cartography');
+      }
+      if (Date.now() - this.lastUpdate > 5000) {
+        this.showTitle = false;
+        this.lastUpdate = Date.now();
+        this.messageIndex += 1;
+        this.messageIndex %= this.messages.length;
+        this.showTitle = true;
+      }
+    },
+
+    isDone() {
+      if (this.isDone) {
+        this.$router.push('/cartography');
+      }
+    },
+  },
 });
 </script>
 
@@ -107,8 +206,9 @@ export default Vue.extend({
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   width: 100%;
-  height: 100%;
+  height: calc(100vh - 180px);
 }
 
 .content {
@@ -116,7 +216,7 @@ export default Vue.extend({
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #222230;
+  background: #222230c7;
   border: 1px solid rgba(255, 255, 255, 0.103);
   padding: 3rem;
   border-radius: 1rem;
@@ -125,6 +225,7 @@ export default Vue.extend({
   min-width: 32vw;
   max-width: calc(100% - 4rem);
   margin: 2rem;
+  z-index: 100;
 
   h1 {
     font-size: 2rem;

@@ -19,7 +19,6 @@ const createMaterialArray = (filename: string): Array<MeshBasicMaterial> => {
   const skyboxImagepaths = createPathStrings(filename);
 
   const materialArray = skyboxImagepaths.map((image: string) => {
-    console.log(image);
     const texture = new TextureLoader().load(image);
     return new MeshBasicMaterial({ map: texture, side: BackSide }); // <---
   });

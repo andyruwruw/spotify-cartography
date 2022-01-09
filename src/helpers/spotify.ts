@@ -1,3 +1,5 @@
+import SpotifyApi from 'spotify-web-api-node';
+
 import api from '@/api';
 
 export interface TrackAudioFeatures {
@@ -12,7 +14,12 @@ export interface TrackAudioFeatures {
   popularity: number;
 }
 
+export interface CondensedSavedTrack extends SpotifyApi.TrackObjectFull {
+  added: number;
+}
+
 export interface Track {
+  added: number;
   id: string;
   name: string;
   artist: string;
@@ -29,7 +36,14 @@ export const getNumberSavedTracks = async () => {
 export const getSavedTracks = async (offset: number) => {
   const response = await api.spotify.library.getSavedTracks(offset);
 
-  return response.body.items.map((item) => item.track);
+  return response.body.items.map((item: SpotifyApi.SavedTrackObject) => {
+    const date = new Date(item.added_at);
+
+    return {
+      added: date.getTime(),
+      ...item.track,
+    };
+  });
 };
 
 export const getTracksAudioFeatures = async (tracks: Array<SpotifyApi.TrackObjectFull>) => {
@@ -42,14 +56,39 @@ export const getTracksAudioFeatures = async (tracks: Array<SpotifyApi.TrackObjec
 
 export const convertTracks = async (
   tracks: Record<string, Track>,
-  savedTracks: Array<SpotifyApi.TrackObjectFull>,
+  savedTracks: Array<CondensedSavedTrack>,
   audioFeatures: SpotifyApi.AudioFeaturesObject[],
-): Promise<Array<Track>> => {
+  index: number,
+  last: number,
+  first: number,
+): Promise<Record<string, number>> => {
   const sample: Array<Track> = [];
 
+  let newLast = last;
+  let newFirst = first;
+
   for (let i = 0; i < savedTracks.length; i += 1) {
-    if (audioFeatures[i] && savedTracks[i].album && savedTracks[i].album.images.length && savedTracks[i].album.images[0].url) {
-      tracks[savedTracks[i].id] = {
+    if (audioFeatures[i]
+      && Number.isNaN(audioFeatures[i].acousticness) === false
+      && Number.isNaN(audioFeatures[i].danceability) === false
+      && Number.isNaN(audioFeatures[i].energy) === false
+      && Number.isNaN(audioFeatures[i].instrumentalness) === false
+      && Number.isNaN(audioFeatures[i].liveness) === false
+      && Number.isNaN(audioFeatures[i].speechiness) === false
+      && Number.isNaN(audioFeatures[i].tempo) === false
+      && Number.isNaN(audioFeatures[i].valence) === false
+      && Number.isNaN(savedTracks[i].popularity) === false
+      && savedTracks[i].album
+      && savedTracks[i].album.images.length
+      && savedTracks[i].album.images[0].url) {
+      if (savedTracks[i].added > newLast) {
+        newLast = savedTracks[i].added;
+      }
+      if (savedTracks[i].added < newFirst) {
+        newFirst = savedTracks[i].added;
+      }
+      tracks[index + i] = {
+        added: savedTracks[i].added,
         id: savedTracks[i].id,
         name: savedTracks[i].name,
         artist: savedTracks[i].artists.map((artist) => artist.name).join(', '),
@@ -73,5 +112,8 @@ export const convertTracks = async (
     }
   }
 
-  return sample;
+  return {
+    newLast,
+    newFirst,
+  };
 };

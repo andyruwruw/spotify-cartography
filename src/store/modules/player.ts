@@ -144,6 +144,10 @@ const actions: ActionTree<PlayerModuleState, any> = {
   async updatePlayerState({ commit }, state: WebPlaybackState) {
     commit('setTrack', state.track_window.current_track);
   },
+
+  async play(context, id: string) {
+    await api.spotify.playback.playSong(id);
+  },
 };
 
 const module: Module<PlayerModuleState, Record<string, any>> = {

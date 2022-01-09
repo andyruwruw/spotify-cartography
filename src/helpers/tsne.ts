@@ -226,7 +226,7 @@ export interface TsneOptions {
   epsilon?: number;
 }
 
-export class tSNE {
+export class TSNE {
   perplexity: number;
 
   dim: number;
