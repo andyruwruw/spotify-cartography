@@ -24,7 +24,7 @@ const VIEW_DISTANCE = 10000;
 
 const BACKGROUND_COLOR = new Color(0x191927);
 
-const POINT_GEOMETRY = new SphereGeometry(0.01, 3, 2);
+const POINT_GEOMETRY = new SphereGeometry(0.005, 3, 2);
 
 const LARGE_POINT_GEOMETRY = new SphereGeometry(1, 3, 2);
 

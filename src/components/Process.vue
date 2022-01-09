@@ -89,8 +89,8 @@
         </v-btn>
 
         <v-btn
-          v-if="isProcessDone"
           color="blue"
+          :disabled="disableSliders"
           dark
           width="71px"
           @click="save">

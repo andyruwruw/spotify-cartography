@@ -17,11 +17,6 @@ const routes: Array<RouteConfig> = [
     component: () => import('@/views/Cartography.vue'),
   },
   {
-    path: '/about',
-    name: 'About',
-    component: () => import('@/views/About.vue'),
-  },
-  {
     path: '/callback',
     name: 'Callback',
     component: () => import('@/views/Callback.vue'),

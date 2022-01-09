@@ -14,7 +14,16 @@ import {
   Track,
 } from '@/helpers/spotify';
 import { downloadJson } from '@/helpers/file';
-// import { DATA as ALL_10_1050 } from '@/assets/examples/all-10-1050';
+import * as ALL_10_1050_TRACKS from '@/assets/examples/all-10-1050-tracks.json';
+import * as ALL_10_1050_GRAPH from '@/assets/examples/all-10-1050-graph.json';
+import * as SMALL_5_10_1000_TRACKS from '@/assets/examples/small-5-10-1000-tracks.json';
+import * as SMALL_5_10_1000_GRAPH from '@/assets/examples/small-5-10-1000-graph.json';
+import * as SMALL_10_10_1000_TRACKS from '@/assets/examples/small-10-10-1000-tracks.json';
+import * as SMALL_10_10_1000_GRAPH from '@/assets/examples/small-10-10-1000-graph.json';
+import * as SMALL_30_10_1000_TRACKS from '@/assets/examples/small-30-10-1000-tracks.json';
+import * as SMALL_30_10_1000_GRAPH from '@/assets/examples/small-30-10-1000-graph.json';
+import * as SMALL_100_10_1000_TRACKS from '@/assets/examples/small-100-10-1000-tracks.json';
+import * as SMALL_100_10_1000_GRAPH from '@/assets/examples/small-100-10-1000-graph.json';
 
 export interface DataModuleState {
   progress: number;
@@ -154,7 +163,7 @@ const actions: ActionTree<DataModuleState, any> = {
     // && i < 1000 For when things get scary...
 
     for (let i = 0; i < total && i < 1000; i += 50) {
-      const savedTracks = await getSavedTracks(i);
+      const savedTracks = await getSavedTracks(i + 925);
 
       const audioFeatures = await getTracksAudioFeatures(savedTracks);
 
@@ -276,14 +285,42 @@ const actions: ActionTree<DataModuleState, any> = {
     downloadJson(data, 'data.json');
   },
 
-  loadExampleData({ commit }) {
-    console.log('hi');
-    // commit('setTracks', ALL_10_1050.tracks);
-    // commit('setGraph', ALL_10_1050.graph);
+  loadExampleData({ commit }, key) {
+    let graphs;
+    let tracks;
+    let perplexity = 10;
+    const iterations = 1000;
 
-    // commit('setPerplexity', Math.round(ALL_10_1050.graph.length ** 0.5));
-    // commit('setEpsilon', 10);
-    // commit('setIterations', 1050);
+    if (key === 'all') {
+      graphs = ALL_10_1050_GRAPH.default.graph;
+      tracks = ALL_10_1050_TRACKS.default.tracks;
+      perplexity = 80;
+    } else if (key === 'small') {
+      graphs = SMALL_5_10_1000_GRAPH.default.graph;
+      tracks = SMALL_5_10_1000_TRACKS.default.tracks;
+      perplexity = 5;
+    } else if (key === 'medium') {
+      graphs = SMALL_10_10_1000_GRAPH.default.graph;
+      tracks = SMALL_10_10_1000_TRACKS.default.tracks;
+      perplexity = 10;
+    } else if (key === 'large') {
+      graphs = SMALL_30_10_1000_GRAPH.default.graph;
+      tracks = SMALL_30_10_1000_TRACKS.default.tracks;
+      perplexity = 30;
+    } else if (key === 'x-large') {
+      graphs = SMALL_100_10_1000_GRAPH.default.graph;
+      tracks = SMALL_100_10_1000_TRACKS.default.tracks;
+      perplexity = 100;
+    }
+
+    commit('setTracks', tracks);
+    commit('setGraph', graphs);
+
+    commit('setFirstAndLast', { first: 1423555000000, last: 1641756897767 });
+
+    commit('setPerplexity', perplexity);
+    commit('setEpsilon', 10);
+    commit('setIterations', iterations);
   },
 };
 

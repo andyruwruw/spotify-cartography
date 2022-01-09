@@ -1,15 +1,3 @@
-import fs from 'fs';
-
-export const writeJson = (filePath: string, data: Record<string, unknown>): void => {
-  fs.writeFile(filePath, JSON.stringify(data, null, 2), (err) => {
-    if (err) {
-      console.log('Error writing file', err);
-    } else {
-      console.log('Successfully wrote file');
-    }
-  });
-};
-
 export const downloadJson = (data: Record<string, any>, filename: string) => {
   const file = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   if ('msSaveOrOpenBlob' in window.navigator) {

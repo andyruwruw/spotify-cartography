@@ -5,6 +5,10 @@
       id="container"
       @click.ctrl="handleClick" />
 
+    <span :class="$style['frame-rate']">
+      {{ framesPerSeconds }} FPS
+    </span>
+
     <progress-details />
 
     <player
@@ -26,7 +30,6 @@ import {
   sRGBEncoding,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import { v4 as idGenerator } from 'uuid';
 
 import {
   addAmbientLightToScene,
@@ -53,6 +56,8 @@ interface IData {
   raycaster: Raycaster | null;
   hovered: number;
   playing: number;
+  lastFrame: number;
+  framesPerSeconds: number;
 }
 
 interface IComputed {
@@ -93,6 +98,8 @@ export default Vue.extend<IData, IMethods, IComputed>({
     raycaster: null as Raycaster | null,
     hovered: -1 as number,
     playing: -1 as number,
+    lastFrame: Date.now() as number,
+    framesPerSeconds: 0 as number,
   }),
 
   computed: {
@@ -223,6 +230,11 @@ export default Vue.extend<IData, IMethods, IComputed>({
     animate() {
       requestAnimationFrame(this.animate);
 
+      const now = Date.now();
+      const milliseconds = now - this.lastFrame;
+      this.framesPerSeconds = Math.floor(1000 / milliseconds);
+      this.lastFrame = now;
+
       (this.raycaster as Raycaster).setFromCamera(this.mouse, this.camera as PerspectiveCamera);
       const intersections = (this.raycaster as Raycaster).intersectObjects(this.points);
 
@@ -268,6 +280,14 @@ export default Vue.extend<IData, IMethods, IComputed>({
   width: 100vw;
   height: 100vh;
   display: block;
+}
+
+.frame-rate {
+  position: absolute;
+  top: 0;
+  right: 1rem;
+  font-size: 1rem;
+  color: #fff;
 }
 
 .player {

@@ -9,6 +9,8 @@
         },
       ]"
       @click="handleClick" />
+
+    <samples v-if="samplesMenu" />
   </div>
 </template>
 
@@ -38,9 +40,14 @@ import {
   addAmbientLightToScene,
   addPointMeshToScene,
 } from '@/helpers/three';
+import Samples from '@/components/Samples.vue';
 
 export default Vue.extend({
   name: 'Welcome',
+
+  components: {
+    Samples,
+  },
 
   data: () => ({
     camera: null as Camera | null,
@@ -57,6 +64,7 @@ export default Vue.extend({
     hoverExample: false,
     points: [] as Mesh[],
     start: 0 as number,
+    samplesMenu: false,
   }),
 
   methods: {
@@ -215,8 +223,9 @@ export default Vue.extend({
       if (this.hoverLogin) {
         this.login();
       } if (this.hoverExample) {
-        this.loadExampleData();
-        this.$router.push('/cartography');
+        this.samplesMenu = !this.samplesMenu;
+        // this.loadExampleData();
+        // this.$router.push('/cartography');
       }
     },
 
