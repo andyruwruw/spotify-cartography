@@ -10,7 +10,7 @@ export const SPOTIFY_CLIENT_ID = process.env.VUE_APP_SPOTIFY_CLIENT_ID;
 
 export const SPOTIFY_BASE_AUTH_URL = 'https://accounts.spotify.com/authorize';
 
-export const REDIRECT_URL = ENVIRONMENT === 'development' ? 'http://localhost:8080/callback' : '';
+export const REDIRECT_URL = ENVIRONMENT === 'development' ? 'http://localhost:8080/callback' : 'https://spotify-cartography.vercel.app/callback';
 
 export const STATE = uuidv4();
 
