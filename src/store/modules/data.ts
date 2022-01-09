@@ -175,7 +175,7 @@ const actions: ActionTree<DataModuleState, any> = {
     // && i < 1000 For when things get scary...
 
     for (let i = 0; i < total; i += 50) {
-      const savedTracks = await getSavedTracks(i + 925);
+      const savedTracks = await getSavedTracks(i);
 
       const audioFeatures = await getTracksAudioFeatures(savedTracks);
 
@@ -325,10 +325,27 @@ const actions: ActionTree<DataModuleState, any> = {
       perplexity = 100;
     }
 
+    const keys = Object.keys(tracks as Record<string, Track>);
+    let first = Date.now();
+    let last = 0;
+
+    for (let i = 0; i < keys.length; i += 1) {
+      const track = (tracks as Record<string, Track>)[i];
+
+      if (track !== undefined && 'added' in track) {
+        if (track.added < first) {
+          first = track.added;
+        }
+        if (track.added > last) {
+          last = track.added;
+        }
+      }
+    }
+
     commit('setTracks', tracks);
     commit('setGraph', graphs);
 
-    commit('setFirstAndLast', { first: 1423555000000, last: 1641756897767 });
+    commit('setFirstAndLast', { first, last });
 
     commit('setPerplexity', perplexity);
     commit('setEpsilon', 10);
