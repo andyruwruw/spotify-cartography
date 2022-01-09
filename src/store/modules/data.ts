@@ -25,6 +25,18 @@ import * as SMALL_30_10_1000_GRAPH from '@/assets/examples/small-30-10-1000-grap
 import * as SMALL_100_10_1000_TRACKS from '@/assets/examples/small-100-10-1000-tracks.json';
 import * as SMALL_100_10_1000_GRAPH from '@/assets/examples/small-100-10-1000-graph.json';
 
+interface GraphData {
+  default: {
+    graph: Array<Array<number>>;
+  }
+}
+
+interface TrackData {
+  default: {
+    tracks: Record<number, Track>;
+  }
+}
+
 export interface DataModuleState {
   progress: number;
   progressSample: Array<Track>;
@@ -292,24 +304,24 @@ const actions: ActionTree<DataModuleState, any> = {
     const iterations = 1000;
 
     if (key === 'all') {
-      graphs = ALL_10_1050_GRAPH.default.graph;
-      tracks = ALL_10_1050_TRACKS.default.tracks;
+      graphs = (ALL_10_1050_GRAPH as unknown as GraphData).default.graph;
+      tracks = (ALL_10_1050_TRACKS as unknown as TrackData).default.tracks;
       perplexity = 80;
     } else if (key === 'small') {
-      graphs = SMALL_5_10_1000_GRAPH.default.graph;
-      tracks = SMALL_5_10_1000_TRACKS.default.tracks;
+      graphs = (SMALL_5_10_1000_GRAPH as unknown as GraphData).default.graph;
+      tracks = (SMALL_5_10_1000_TRACKS as unknown as TrackData).default.tracks;
       perplexity = 5;
     } else if (key === 'medium') {
-      graphs = SMALL_10_10_1000_GRAPH.default.graph;
-      tracks = SMALL_10_10_1000_TRACKS.default.tracks;
+      graphs = (SMALL_10_10_1000_GRAPH as unknown as GraphData).default.graph;
+      tracks = (SMALL_10_10_1000_TRACKS as unknown as TrackData).default.tracks;
       perplexity = 10;
     } else if (key === 'large') {
-      graphs = SMALL_30_10_1000_GRAPH.default.graph;
-      tracks = SMALL_30_10_1000_TRACKS.default.tracks;
+      graphs = (SMALL_30_10_1000_GRAPH as unknown as GraphData).default.graph;
+      tracks = (SMALL_30_10_1000_TRACKS as unknown as TrackData).default.tracks;
       perplexity = 30;
     } else if (key === 'x-large') {
-      graphs = SMALL_100_10_1000_GRAPH.default.graph;
-      tracks = SMALL_100_10_1000_TRACKS.default.tracks;
+      graphs = (SMALL_100_10_1000_GRAPH as unknown as GraphData).default.graph;
+      tracks = (SMALL_100_10_1000_TRACKS as unknown as TrackData).default.tracks;
       perplexity = 100;
     }
 
