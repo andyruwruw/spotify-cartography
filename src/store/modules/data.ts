@@ -162,7 +162,7 @@ const actions: ActionTree<DataModuleState, any> = {
 
     // && i < 1000 For when things get scary...
 
-    for (let i = 0; i < total && i < 1000; i += 50) {
+    for (let i = 0; i < total; i += 50) {
       const savedTracks = await getSavedTracks(i + 925);
 
       const audioFeatures = await getTracksAudioFeatures(savedTracks);
