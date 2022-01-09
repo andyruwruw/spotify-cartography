@@ -263,6 +263,7 @@ export default Vue.extend<IData, IMethods, IComputed>({
     height: 100%;
     background: #14A5AE;
     border-radius: .3rem;
+    transition: width .3s ease-in-out;
   }
 }
 

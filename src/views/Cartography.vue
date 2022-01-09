@@ -5,8 +5,10 @@
       id="container"
       @click.ctrl="handleClick" />
 
+    <progress-details />
+
     <player
-      :display="hovered !== -1 || playing !== -1"
+      :display="(hovered !== -1 || playing !== -1) && getTracks[hovered !== -1 ? hovered : playing] !== undefined"
       :track="hovered !== -1 || playing !== -1 ? getTracks[hovered !== -1 ? hovered : playing] : null" />
   </div>
 </template>
@@ -24,6 +26,7 @@ import {
   sRGBEncoding,
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { v4 as idGenerator } from 'uuid';
 
 import {
   addAmbientLightToScene,
@@ -37,12 +40,47 @@ import {
   getContainer,
 } from '@/helpers/three';
 import Player from '@/components/Player.vue';
+import ProgressDetails from '@/components/ProgressDetails.vue';
+import { Track } from '@/helpers/spotify';
 
-export default Vue.extend({
+interface IData {
+  camera: PerspectiveCamera | null;
+  scene: Scene | null;
+  renderer: WebGLRenderer | null;
+  controls: OrbitControls | null;
+  mouse: Vector2;
+  points: Mesh[];
+  raycaster: Raycaster | null;
+  hovered: number;
+  playing: number;
+}
+
+interface IComputed {
+  getTracks: Array<Track>;
+  getGraph: Array<Array<number>>;
+  getFirstAndLast: Array<number>;
+  isProcessDone: boolean;
+  isAuthenticated: boolean;
+  timeToReset: number;
+  getUpdate: number;
+}
+
+interface IMethods {
+  processData: () => void;
+  handleClick: () => void;
+  addPoints: () => void;
+  trackMouse: (e: MouseEvent) => void;
+  initialize: () => void;
+  animate: () => void;
+  resize: () => void;
+}
+
+export default Vue.extend<IData, IMethods, IComputed>({
   name: 'Cartography',
 
   components: {
     Player,
+    ProgressDetails,
   },
 
   data: () => ({
@@ -62,10 +100,16 @@ export default Vue.extend({
       'getTracks',
       'getGraph',
       'getFirstAndLast',
+      'isProcessDone',
+      'getUpdate',
     ]),
     ...mapGetters('auth', [
       'isAuthenticated',
     ]),
+
+    timeToReset() {
+      return this.getUpdate;
+    },
   },
 
   async mounted() {
@@ -86,8 +130,11 @@ export default Vue.extend({
   },
 
   watch: {
-    getGraph() {
-      this.addPoints();
+    timeToReset() {
+      if (this.isProcessDone) {
+        console.log('process finished');
+        this.addPoints();
+      }
     },
   },
 
@@ -113,17 +160,31 @@ export default Vue.extend({
         (this.scene as Scene).remove(this.points[i]);
       }
 
+      this.points = [];
+
       const firstAndLast = this.getFirstAndLast as number[];
       const first = firstAndLast[0];
       const last = firstAndLast[1];
+
+      let largestValue = 0;
+
+      for (let i = 0; i < this.getGraph.length; i += 1) {
+        for (let j = 0; j < this.getGraph[i].length; j += 1) {
+          if (this.getGraph[i][j] > largestValue) {
+            largestValue = this.getGraph[i][j];
+          }
+        }
+      }
+
+      const multiplier = 1;
 
       // Add new points.
       for (let i = 0; i < this.getGraph.length; i += 1) {
         this.points.push(addPointMeshToScene(
           this.scene as Scene,
-          this.getGraph[i][0] * 10000,
-          this.getGraph[i][1] * 10000,
-          this.getGraph[i][2] * 10000,
+          (this.getGraph[i][0] / largestValue) * multiplier,
+          (this.getGraph[i][1] / largestValue) * multiplier,
+          (this.getGraph[i][2] / largestValue) * multiplier,
           getColor((this.getTracks[i].added - first) / (last - first)),
         ));
       }
@@ -169,6 +230,14 @@ export default Vue.extend({
         }
       } else {
         this.hovered = -1;
+      }
+
+      if (this.isProcessDone) {
+        for (let i = 0; i < this.points.length; i += 1) {
+          if (this.getTracks[i] && 'audioFeatures' in this.getTracks[i]) {
+            this.points[i].rotation.y += this.getTracks[i].audioFeatures.energy / 10;
+          }
+        }
       }
 
       // eslint-disable-next-line max-len

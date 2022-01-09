@@ -1,362 +1,399 @@
 <template>
-  <div :class="$style.component">
-    <div :class="$style.song">
+  <div>
+    <div
+      :class="[$style.tabs, {
+        [$style['tabs-active']]: tab !== 'none',
+      }]">
       <div
-        :class="$style.image"
-        :style="{
-          'background-image': `url('${display ? track.image : '#'}')`,
-        }" />
-
-      <div :class="$style.details">
-        <span
-          v-if="display"
-          :class="$style.title"
-          @click="link">
-          {{ track.name }}
+        :class="$style.tab"
+        @click="openTab('help')">
+        <span>
+          Help
         </span>
+      </div>
 
-        <span
-          v-if="!display"
-          :class="$style['title-skeleton-loader']" />
-
-        <span
-          v-if="display"
-          :class="$style.artists">
-          {{ track.artist }}
+      <div
+        :class="$style.tab"
+        @click="openTab('tsne')">
+        <span>
+          T-SNE
         </span>
-
-        <span
-          v-if="!display"
-          :class="$style['artists-skeleton-loader']" />
       </div>
     </div>
 
     <div
-      :class="[$style.stats, {
-        [$style['not-display']]: !display,
-      }]">
-      <div :class="$style['stat-column']">
-        <div :class="[$style.stat, $style.valence]">
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.bar"
-                v-bind="attrs"
-                v-on="on">
-                <span
-                  :class="$style.fill"
-                  :style="{
-                    'width': `${display ? 100 * track.audioFeatures.valence : 0}%`,
-                  }"/>
-              </span>
-            </template>
-            <span>Happiness: {{ display ? Math.round(100 * track.audioFeatures.valence) : 0 }}%</span>
-          </v-tooltip>
+      v-if="tab !== 'none'"
+      :class="$style['open-tabs']">
+      <process v-if="tab === 'tsne'" />
 
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.label"
-                v-bind="attrs"
-                v-on="on">
-                Happiness
-                <v-icon :color="display ? 'rgb(255, 196, 1)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
-              </span>
-            </template>
-            <span>Tracks with high valence (happiness) sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry).</span>
-          </v-tooltip>
-        </div>
+      <help v-if="tab === 'help'" />
+    </div>
 
-        <div :class="[$style.stat, $style.acousticness]">
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.bar"
-                v-bind="attrs"
-                v-on="on">
-                <span
-                  :class="$style.fill"
-                  :style="{
-                    'width': `${display ? 100 * track.audioFeatures.acousticness : 0}%`,
-                  }"/>
-              </span>
-            </template>
-            <span>Chance Track is Accoustic: {{ display ? Math.round(100 * track.audioFeatures.acousticness) : 0 }}%</span>
-          </v-tooltip>
+    <div :class="$style.player">
+      <div :class="$style.song">
+        <div
+          :class="$style.image"
+          :style="{
+            'background-image': `url('${display ? track.image : '#'}')`,
+          }" />
 
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.label"
-                v-bind="attrs"
-                v-on="on">
-                Acousticness
-                <v-icon :color="display ? 'rgb(248, 91, 91)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
-              </span>
-            </template>
-            <span>A confidence measure from 0.0 to 1.0 of whether the track is acoustic.</span>
-          </v-tooltip>
+        <div :class="$style.details">
+          <span
+            v-if="display"
+            :class="$style.title"
+            @click="link">
+            {{ track.name }}
+          </span>
+
+          <span
+            v-if="!display"
+            :class="$style['title-skeleton-loader']" />
+
+          <span
+            v-if="display"
+            :class="$style.artists">
+            {{ track.artist }}
+          </span>
+
+          <span
+            v-if="!display"
+            :class="$style['artists-skeleton-loader']" />
         </div>
       </div>
 
-      <div :class="$style['stat-column']">
-        <div :class="[$style.stat, $style.energy]">
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.bar"
-                v-bind="attrs"
-                v-on="on">
+      <div
+        :class="[$style.stats, {
+          [$style['not-display']]: !display,
+        }]">
+        <div :class="$style['stat-column']">
+          <div :class="[$style.stat, $style.valence]">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
                 <span
-                  :class="$style.fill"
-                  :style="{
-                    'width': `${display ? 100 * track.audioFeatures.energy : 0}%`,
-                  }" />
-              </span>
-            </template>
-            <span>Energy: {{ display ? Math.round(100 * track.audioFeatures.energy) : 0 }}%</span>
-          </v-tooltip>
+                  :class="$style.bar"
+                  v-bind="attrs"
+                  v-on="on">
+                  <span
+                    :class="$style.fill"
+                    :style="{
+                      'width': `${display ? 100 * track.audioFeatures.valence : 0}%`,
+                    }"/>
+                </span>
+              </template>
+              <span>Happiness: {{ display ? Math.round(100 * track.audioFeatures.valence) : 0 }}%</span>
+            </v-tooltip>
 
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.label"
-                v-bind="attrs"
-                v-on="on">
-                Energy
-                <v-icon :color="display ? 'rgb(1, 162, 255)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
-              </span>
-            </template>
-            <span>Energy represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy.</span>
-          </v-tooltip>
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.label"
+                  v-bind="attrs"
+                  v-on="on">
+                  Happiness
+                  <v-icon :color="display ? 'rgb(255, 196, 1)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
+                </span>
+              </template>
+              <span>Tracks with high valence (happiness) sound more positive (e.g. happy, cheerful, euphoric), while tracks with low valence sound more negative (e.g. sad, depressed, angry).</span>
+            </v-tooltip>
+          </div>
+
+          <div :class="[$style.stat, $style.acousticness]">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.bar"
+                  v-bind="attrs"
+                  v-on="on">
+                  <span
+                    :class="$style.fill"
+                    :style="{
+                      'width': `${display ? 100 * track.audioFeatures.acousticness : 0}%`,
+                    }"/>
+                </span>
+              </template>
+              <span>Chance Track is Accoustic: {{ display ? Math.round(100 * track.audioFeatures.acousticness) : 0 }}%</span>
+            </v-tooltip>
+
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.label"
+                  v-bind="attrs"
+                  v-on="on">
+                  Acousticness
+                  <v-icon :color="display ? 'rgb(248, 91, 91)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
+                </span>
+              </template>
+              <span>A confidence measure from 0.0 to 1.0 of whether the track is acoustic.</span>
+            </v-tooltip>
+          </div>
         </div>
 
-        <div :class="[$style.stat, $style.liveness]">
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.bar"
-                v-bind="attrs"
-                v-on="on">
+        <div :class="$style['stat-column']">
+          <div :class="[$style.stat, $style.energy]">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
                 <span
-                  :class="$style.fill"
-                  :style="{
-                    'width': `${display ? 100 * track.audioFeatures.liveness : 0}%`,
-                  }" />
-              </span>
-            </template>
-            <span>Chance Track is Live: {{ display ? Math.round(100 * track.audioFeatures.liveness) : 0 }}%</span>
-          </v-tooltip>
+                  :class="$style.bar"
+                  v-bind="attrs"
+                  v-on="on">
+                  <span
+                    :class="$style.fill"
+                    :style="{
+                      'width': `${display ? 100 * track.audioFeatures.energy : 0}%`,
+                    }" />
+                </span>
+              </template>
+              <span>Energy: {{ display ? Math.round(100 * track.audioFeatures.energy) : 0 }}%</span>
+            </v-tooltip>
 
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.label"
-                v-bind="attrs"
-                v-on="on">
-                Liveness
-                <v-icon :color="display ? 'rgb(159, 255, 121)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
-              </span>
-            </template>
-            <span>Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live.</span>
-          </v-tooltip>
-        </div>
-      </div>
-
-      <div :class="$style['stat-column']">
-        <div :class="[$style.stat, $style.danceability]">
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.bar"
-                v-bind="attrs"
-                v-on="on">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
                 <span
-                  :class="$style.fill"
-                  :style="{
-                    'width': `${display ? 100 * track.audioFeatures.danceability : 0}%`,
-                  }" />
-              </span>
-            </template>
-            <span>Danceability: {{ display ? Math.round(100 * track.audioFeatures.danceability) : 0 }}%</span>
-          </v-tooltip>
+                  :class="$style.label"
+                  v-bind="attrs"
+                  v-on="on">
+                  Energy
+                  <v-icon :color="display ? 'rgb(1, 162, 255)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
+                </span>
+              </template>
+              <span>Energy represents a perceptual measure of intensity and activity. Typically, energetic tracks feel fast, loud, and noisy.</span>
+            </v-tooltip>
+          </div>
 
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.label"
-                v-bind="attrs"
-                v-on="on">
-                Danceability
-                <v-icon :color="display ? 'rgb(187, 74, 253)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
-              </span>
-            </template>
-            <span>Danceability describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity.</span>
-          </v-tooltip>
-        </div>
-
-        <div :class="[$style.stat, $style.instrumentalness]">
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.bar"
-                v-bind="attrs"
-                v-on="on">
+          <div :class="[$style.stat, $style.liveness]">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
                 <span
-                  :class="$style.fill"
-                  :style="{
-                    'width': `${display ? 100 * track.audioFeatures.instrumentalness : 0}%`,
-                  }" />
-              </span>
-            </template>
-            <span>Chance Track is Instrumental: {{ display ? Math.round(100 * track.audioFeatures.instrumentalness) : 0 }}%</span>
-          </v-tooltip>
+                  :class="$style.bar"
+                  v-bind="attrs"
+                  v-on="on">
+                  <span
+                    :class="$style.fill"
+                    :style="{
+                      'width': `${display ? 100 * track.audioFeatures.liveness : 0}%`,
+                    }" />
+                </span>
+              </template>
+              <span>Chance Track is Live: {{ display ? Math.round(100 * track.audioFeatures.liveness) : 0 }}%</span>
+            </v-tooltip>
 
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.label"
-                v-bind="attrs"
-                v-on="on">
-                Instrumentalness
-                <v-icon :color="display ? 'rgb(65, 255, 214)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
-              </span>
-            </template>
-            <span>Predicts whether a track contains no vocals. "Ooh" and "aah" sounds are treated as instrumental in this context.</span>
-          </v-tooltip>
-        </div>
-      </div>
-
-      <div :class="$style['stat-column']">
-        <div :class="[$style.stat, $style.popularity]">
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.bar"
-                v-bind="attrs"
-                v-on="on">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
                 <span
-                  :class="$style.fill"
-                  :style="{
-                    'width': `${display ? track.audioFeatures.popularity : 0}%`,
-                  }" />
-                  </span>
-            </template>
-            <span>Popularity: {{ display ? Math.round(track.audioFeatures.popularity) : 0 }}%</span>
-          </v-tooltip>
-
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.label"
-                v-bind="attrs"
-                v-on="on">
-                Popularity
-                <v-icon :color="display ? 'rgb(230, 245, 100)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
-              </span>
-            </template>
-            <span>The popularity is calculated by algorithm and is based, in the most part, on the total number of plays the track has had and how recent those plays are.</span>
-          </v-tooltip>
+                  :class="$style.label"
+                  v-bind="attrs"
+                  v-on="on">
+                  Liveness
+                  <v-icon :color="display ? 'rgb(159, 255, 121)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
+                </span>
+              </template>
+              <span>Detects the presence of an audience in the recording. Higher liveness values represent an increased probability that the track was performed live.</span>
+            </v-tooltip>
+          </div>
         </div>
 
-        <div :class="[$style.stat, $style.speechiness]">
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.bar"
-                v-bind="attrs"
-                v-on="on">
+        <div :class="$style['stat-column']">
+          <div :class="[$style.stat, $style.danceability]">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
                 <span
-                  :class="$style.fill"
-                  :style="{
-                    'width': `${display ? 100 * track.audioFeatures.speechiness : 0}%`,
-                  }" />
-              </span>
-            </template>
-            <span>Amount of Spoken Word: {{ display ? Math.round(100 * track.audioFeatures.speechiness) : 0 }}%</span>
-          </v-tooltip>
+                  :class="$style.bar"
+                  v-bind="attrs"
+                  v-on="on">
+                  <span
+                    :class="$style.fill"
+                    :style="{
+                      'width': `${display ? 100 * track.audioFeatures.danceability : 0}%`,
+                    }" />
+                </span>
+              </template>
+              <span>Danceability: {{ display ? Math.round(100 * track.audioFeatures.danceability) : 0 }}%</span>
+            </v-tooltip>
 
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.label"
-                v-bind="attrs"
-                v-on="on">
-                Speechiness
-                <v-icon :color="display ? 'rgb(255, 82, 241)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
-              </span>
-            </template>
-            <span>Speechiness detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value. Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music.</span>
-          </v-tooltip>
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.label"
+                  v-bind="attrs"
+                  v-on="on">
+                  Danceability
+                  <v-icon :color="display ? 'rgb(187, 74, 253)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
+                </span>
+              </template>
+              <span>Danceability describes how suitable a track is for dancing based on a combination of musical elements including tempo, rhythm stability, beat strength, and overall regularity.</span>
+            </v-tooltip>
+          </div>
+
+          <div :class="[$style.stat, $style.instrumentalness]">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.bar"
+                  v-bind="attrs"
+                  v-on="on">
+                  <span
+                    :class="$style.fill"
+                    :style="{
+                      'width': `${display ? 100 * track.audioFeatures.instrumentalness : 0}%`,
+                    }" />
+                </span>
+              </template>
+              <span>Chance Track is Instrumental: {{ display ? Math.round(100 * track.audioFeatures.instrumentalness) : 0 }}%</span>
+            </v-tooltip>
+
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.label"
+                  v-bind="attrs"
+                  v-on="on">
+                  Instrumentalness
+                  <v-icon :color="display ? 'rgb(65, 255, 214)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
+                </span>
+              </template>
+              <span>Predicts whether a track contains no vocals. "Ooh" and "aah" sounds are treated as instrumental in this context.</span>
+            </v-tooltip>
+          </div>
         </div>
-      </div>
 
-      <div :class="$style['stat-column']">
-        <div :class="[$style.stat, $style.tempo]">
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.bar"
-                v-bind="attrs"
-                v-on="on">
+        <div :class="$style['stat-column']">
+          <div :class="[$style.stat, $style.popularity]">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
                 <span
-                  :class="$style.fill"
-                  :style="{
-                    'width': `${display ? 100 * (track.audioFeatures.tempo / 300) : 0}%`,
-                  }" />
-              </span>
-            </template>
-            <span>Tempo: {{ display ? Math.round(track.audioFeatures.tempo) : 0 }} BPM</span>
-          </v-tooltip>
+                  :class="$style.bar"
+                  v-bind="attrs"
+                  v-on="on">
+                  <span
+                    :class="$style.fill"
+                    :style="{
+                      'width': `${display ? track.audioFeatures.popularity : 0}%`,
+                    }" />
+                    </span>
+              </template>
+              <span>Popularity: {{ display ? Math.round(track.audioFeatures.popularity) : 0 }}%</span>
+            </v-tooltip>
 
-          <v-tooltip
-            color="#191927"
-            bottom>
-            <template v-slot:activator="{ on, attrs }">
-              <span
-                :class="$style.label"
-                v-bind="attrs"
-                v-on="on">
-                Tempo
-                <v-icon :color="display ? 'rgb(240, 124, 70)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
-              </span>
-            </template>
-            <span>The overall estimated tempo of a track in beats per minute (BPM).</span>
-          </v-tooltip>
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.label"
+                  v-bind="attrs"
+                  v-on="on">
+                  Popularity
+                  <v-icon :color="display ? 'rgb(230, 245, 100)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
+                </span>
+              </template>
+              <span>The popularity is calculated by algorithm and is based, in the most part, on the total number of plays the track has had and how recent those plays are.</span>
+            </v-tooltip>
+          </div>
+
+          <div :class="[$style.stat, $style.speechiness]">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.bar"
+                  v-bind="attrs"
+                  v-on="on">
+                  <span
+                    :class="$style.fill"
+                    :style="{
+                      'width': `${display ? 100 * track.audioFeatures.speechiness : 0}%`,
+                    }" />
+                </span>
+              </template>
+              <span>Amount of Spoken Word: {{ display ? Math.round(100 * track.audioFeatures.speechiness) : 0 }}%</span>
+            </v-tooltip>
+
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.label"
+                  v-bind="attrs"
+                  v-on="on">
+                  Speechiness
+                  <v-icon :color="display ? 'rgb(255, 82, 241)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
+                </span>
+              </template>
+              <span>Speechiness detects the presence of spoken words in a track. The more exclusively speech-like the recording (e.g. talk show, audio book, poetry), the closer to 1.0 the attribute value. Values above 0.66 describe tracks that are probably made entirely of spoken words. Values between 0.33 and 0.66 describe tracks that may contain both music and speech, either in sections or layered, including such cases as rap music.</span>
+            </v-tooltip>
+          </div>
+        </div>
+
+        <div :class="$style['stat-column']">
+          <div :class="[$style.stat, $style.tempo]">
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.bar"
+                  v-bind="attrs"
+                  v-on="on">
+                  <span
+                    :class="$style.fill"
+                    :style="{
+                      'width': `${display ? 100 * (track.audioFeatures.tempo / 300) : 0}%`,
+                    }" />
+                </span>
+              </template>
+              <span>Tempo: {{ display ? Math.round(track.audioFeatures.tempo) : 0 }} BPM</span>
+            </v-tooltip>
+
+            <v-tooltip
+              color="#191927"
+              bottom>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  :class="$style.label"
+                  v-bind="attrs"
+                  v-on="on">
+                  Tempo
+                  <v-icon :color="display ? 'rgb(240, 124, 70)' : 'rgba(255, 255, 255, 0.267)'" x-small>mdi-help-circle</v-icon>
+                </span>
+              </template>
+              <span>The overall estimated tempo of a track in beats per minute (BPM).</span>
+            </v-tooltip>
+          </div>
+
+          <div :class="[$style.stat]">
+            <span :class="$style.label">
+              {{ display ? `Added ${dateAdded}` : 'No Date to Display' }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -365,6 +402,10 @@
 
 <script lang="ts">
 import Vue from 'vue';
+import moment from 'moment';
+
+import Process from './Process.vue';
+import Help from './Help.vue';
 
 export default Vue.extend({
   name: 'Player',
@@ -380,16 +421,115 @@ export default Vue.extend({
     },
   },
 
+  components: {
+    Process,
+    Help,
+  },
+
+  data: () => ({
+    tab: 'none',
+    opened: 0,
+  }),
+
   methods: {
     link() {
       window.open(`https://open.spotify.com/track/${this.track.id}`, '_blank');
+    },
+
+    openTab(id: string) {
+      if (id === this.tab) {
+        this.tab = 'none';
+      } else if (Date.now() - this.opened > 500) {
+        this.tab = id;
+        this.opened = Date.now();
+      }
+    },
+  },
+
+  computed: {
+    dateAdded() {
+      if (!this.display) {
+        return '';
+      }
+      return moment(this.track.added).format('MMM Do, YYYY');
     },
   },
 });
 </script>
 
 <style lang="scss" module>
-.component {
+.open-tabs {
+  display: flex;
+  position: fixed;
+  bottom: 120px;
+  left: 0;
+  width: 100vw;
+  height: 240px;
+  animation: slide-in-tab 0.3s ease;
+}
+
+@keyframes slide-in-tab {
+  from {
+    bottom: 0px;
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    bottom: -240px;
+  }
+  to {
+    bottom: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tabs {
+  display: flex;
+  flex-direction: row-reverse;
+  position: fixed;
+  bottom: 120px;
+  left: 0;
+  width: calc(100vw - 2rem);
+  transition: bottom .3s ease;
+
+  &.tabs-active {
+    bottom: 360px;
+  }
+
+  .tab {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #22223083;
+    width: 10rem;
+    height: 40px;
+    border-radius: 10px 10px 0 0;
+    border: 1px solid rgba(255, 255, 255, 0.144);
+    margin: 0 .5rem;
+    cursor: pointer;
+    transition: background-color .2s ease-in-out;
+
+    &:hover {
+      background-color: #32324283;
+
+      span {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.player {
   display: flex;
   position: fixed;
   width: 100vw;
@@ -434,6 +574,7 @@ export default Vue.extend({
       .title {
         font-size: 1.5rem;
         cursor: pointer;
+        animation: fade-in .5s ease-in-out;
 
         &:hover {
           text-decoration: underline;
@@ -450,6 +591,7 @@ export default Vue.extend({
       .artists {
         font-size: 1.2rem;
         color: rgba(255, 255, 255, 0.466);
+        animation: fade-in .5s ease-in-out;
       }
 
       .artists-skeleton-loader {
@@ -512,6 +654,7 @@ export default Vue.extend({
           font-size: 1rem;
           color: rgba(255, 255, 255, 0.466);
           cursor: help;
+          transition: color .5s ease-in-out;
         }
 
         &.valence {

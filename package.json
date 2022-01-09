@@ -13,6 +13,7 @@
     "axios": "^0.24.0",
     "core-js": "^3.6.5",
     "dotenv": "^10.0.0",
+    "moment": "^2.29.1",
     "path": "^0.12.7",
     "spotify-web-api-node": "^5.0.2",
     "three": "^0.136.0",

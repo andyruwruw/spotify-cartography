@@ -23,6 +23,12 @@ export interface DataModuleState {
   tsne: null | TSNE;
   first: number;
   last: number;
+  perplexity: number;
+  epsilon: number;
+  iterations: number;
+  currentIteration: number;
+  processDone: boolean;
+  update: number;
 }
 
 const defaultState = (): DataModuleState => ({
@@ -34,6 +40,12 @@ const defaultState = (): DataModuleState => ({
   tsne: null,
   first: Date.now(),
   last: 0,
+  perplexity: 1,
+  epsilon: 10,
+  iterations: 1,
+  currentIteration: 1,
+  processDone: true,
+  update: 1,
 });
 
 const getters: GetterTree<DataModuleState, any> = {
@@ -50,6 +62,27 @@ const getters: GetterTree<DataModuleState, any> = {
   },
   getFirstAndLast(state): [number, number] {
     return [state.first, state.last];
+  },
+  getPerplexity(state): number {
+    return state.perplexity;
+  },
+  getEpsilon(state): number {
+    return state.epsilon;
+  },
+  getIterations(state): number {
+    return state.iterations;
+  },
+  getCurrentIteration(state): number {
+    return state.currentIteration;
+  },
+  isProcessDone(state): boolean {
+    return state.processDone;
+  },
+  getTSNE(state): TSNE {
+    return state.tsne as TSNE;
+  },
+  getUpdate(state): number {
+    return state.update;
   },
 };
 
@@ -75,6 +108,24 @@ const mutations: MutationTree<DataModuleState> = {
   setFirstAndLast(state, { first, last }) {
     state.first = first;
     state.last = last;
+  },
+  setPerplexity(state, perplexity: number) {
+    state.perplexity = perplexity;
+  },
+  setEpsilon(state, epsilon: number) {
+    state.epsilon = epsilon;
+  },
+  setIterations(state, iterations: number) {
+    state.iterations = iterations;
+  },
+  setCurrentIteration(state, iteration: number) {
+    state.currentIteration = iteration;
+  },
+  setProcessState(state, done: boolean) {
+    state.processDone = done;
+  },
+  bumpUpdate(state) {
+    state.update = (state.update + 1) % 100;
   },
 };
 
@@ -116,11 +167,26 @@ const actions: ActionTree<DataModuleState, any> = {
 
     commit('setDone', true);
     commit('setTracks', tracks);
-
-    // dispatch('processData');
   },
 
-  async firstProcess({ rootGetters, commit }) {
+  changeSettings({ commit }, { perplexity, epsilon, iterations }) {
+    commit('setPerplexity', perplexity);
+    commit('setEpsilon', epsilon);
+    commit('setIterations', iterations);
+  },
+
+  async firstProcess({ rootGetters, commit, dispatch }) {
+    const tracks = Object.values(rootGetters['data/getTracks'] as Record<string, Track>);
+
+    commit('setPerplexity', Math.round(tracks.length ** 0.5));
+    commit('setEpsilon', 10);
+    commit('setIterations', 1);
+
+    dispatch('processData');
+  },
+
+  async processData({ commit, rootGetters, dispatch }) {
+    commit('setProcessState', false);
     const tracks = Object.values(rootGetters['data/getTracks'] as Record<string, Track>);
     const vectors = tracks.map((track: Track) => [
       track.audioFeatures.valence,
@@ -134,37 +200,48 @@ const actions: ActionTree<DataModuleState, any> = {
       track.audioFeatures.popularity,
     ]);
 
+    if (tracks.length === 0) {
+      return;
+    }
+
     const opt = {
-      epsiolon: 10,
-      perplexity: Math.round(vectors.length ** 0.5),
+      epsilon: rootGetters['data/getEpsilon'] as number,
+      perplexity: rootGetters['data/getPerplexity'] as number,
       dim: 3,
     };
 
     const tsne = new TSNE(opt);
-
     commit('setTSNE', tsne);
 
     tsne.initDataRaw(vectors);
 
-    tsne.step();
+    const iterations = rootGetters['data/getIterations'];
+    commit('setCurrentIteration', 0);
 
-    const graph = tsne.getSolution();
-    commit('setGraph', graph);
+    setTimeout(() => dispatch('step', { iteration: 0 }), 0);
   },
 
-  async processData({ commit, rootGetters }) {
-    const tracks = Object.values(rootGetters['data/getTracks'] as Record<string, Track>);
-    const vectors = tracks.map((track: Track) => [
-      track.audioFeatures.valence,
-      track.audioFeatures.energy,
-      track.audioFeatures.danceability,
-      track.audioFeatures.acousticness,
-      track.audioFeatures.liveness,
-      track.audioFeatures.speechiness,
-      track.audioFeatures.instrumentalness,
-      track.audioFeatures.tempo,
-      track.audioFeatures.popularity,
-    ]);
+  async step({ commit, rootGetters, dispatch }, { iteration }) {
+    if (iteration === rootGetters['data/getIterations']) {
+      const graph = rootGetters['data/getTSNE'].getSolution();
+      commit('setGraph', graph);
+
+      commit('setProcessState', true);
+      commit('bumpUpdate');
+      return;
+    }
+
+    commit('setCurrentIteration', iteration + 1);
+
+    await rootGetters['data/getTSNE'].step();
+
+    if (iteration % 10 === 0) {
+      const graph = rootGetters['data/getTSNE'].getSolution();
+      commit('setGraph', graph);
+      commit('bumpUpdate');
+    }
+
+    setTimeout(() => dispatch('step', { iteration: iteration + 1 }), 0);
   },
 };
 
