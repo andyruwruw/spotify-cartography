@@ -12,7 +12,7 @@ import {
   getSavedTracks,
   getTracksAudioFeatures,
   Track,
-} from '@/helpers/spotify';
+} from '@/helpers/spotify-processing';
 import { downloadJson } from '@/helpers/file';
 import * as ALL_10_1050_TRACKS from '@/assets/examples/all-10-1050-tracks.json';
 import * as ALL_10_1050_GRAPH from '@/assets/examples/all-10-1050-graph.json';

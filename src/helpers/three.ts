@@ -1,4 +1,3 @@
-import { FONT } from '@/assets/fonts/helvetiker_bold.typeface';
 import {
   AmbientLight,
   Camera,
@@ -18,63 +17,101 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
 
-const CONTAINER_ID = 'container';
+import {
+  THREE_CONTAINER_ID,
+  THREE_BACKGROUND_COLOR,
+  POINT_GEOMETRY_DEFAULT_VALUES,
+  THREE_DEFAULT_MATERIAL_COLOR,
+  PERSPECTIVE_CAMERA_DEFAULT_VALUES,
+  ORTHOGRAPHIC_CAMERA_DEFAULT_VALUES,
+  ORBIT_CONTROLS_DEFAULT_VALUES,
+} from '@/config';
+import { FONT } from '@/assets/fonts/helvetiker_bold.typeface';
 
-const VIEW_DISTANCE = 10000;
+const BACKGROUND_COLOR = new Color(THREE_BACKGROUND_COLOR);
 
-const BACKGROUND_COLOR = new Color(0x191927);
-
-const POINT_GEOMETRY = new SphereGeometry(0.005, 3, 2);
-
-const LARGE_POINT_GEOMETRY = new SphereGeometry(1, 3, 2);
+const DEFAULT_POINT_GEOMETRY = new SphereGeometry(
+  POINT_GEOMETRY_DEFAULT_VALUES.radius,
+  POINT_GEOMETRY_DEFAULT_VALUES.widthSegment,
+  POINT_GEOMETRY_DEFAULT_VALUES.heightSegment,
+);
 
 const POINT_MATERIAL = new MeshToonMaterial({
-  color: 0xffffff,
+  color: THREE_DEFAULT_MATERIAL_COLOR,
 });
 
 const TEXT_MATERIAL = new MeshToonMaterial({
-  color: 0xffffff,
+  color: THREE_DEFAULT_MATERIAL_COLOR,
 });
 
-export const getContainer = () => document.getElementById(CONTAINER_ID);
+/**
+ * Retrieves Three.js canvas element by id.
+ *
+ * @returns {HTMLElement}
+ */
+export const getContainer = () => document.getElementById(THREE_CONTAINER_ID);
 
+/**
+ * Creates a new Perspective camera for a scene.
+ *
+ * @param {HTMLElement} container Three.js canvas element.
+ * @returns {PerspectiveCamera} Camera for scene.
+ */
 export const createPerspectiveCamera = (container: HTMLElement): PerspectiveCamera => {
   const camera = new PerspectiveCamera(
-    70,
+    PERSPECTIVE_CAMERA_DEFAULT_VALUES.fov,
     container.clientWidth / container.clientHeight,
-    0.01,
-    VIEW_DISTANCE,
+    PERSPECTIVE_CAMERA_DEFAULT_VALUES.near,
+    PERSPECTIVE_CAMERA_DEFAULT_VALUES.far,
   );
-  camera.position.z = 1;
+  camera.position.z = PERSPECTIVE_CAMERA_DEFAULT_VALUES.z;
 
   return camera;
 };
 
+/**
+ * Creates a new Orthographic camera for a scene.
+ *
+ * @param {HTMLElement} container Three.js canvas element.
+ * @returns {PerspectiveCamera} Camera for scene.
+ */
 export const createOrthographicCamera = (container: HTMLElement): OrthographicCamera => {
   const camera = new OrthographicCamera(
-    container.clientWidth / (-2 * 1000),
-    container.clientWidth / (2 * 1000),
-    container.clientHeight / (2 * 1000),
-    container.clientHeight / (-2 * 1000),
-    1,
-    VIEW_DISTANCE,
+    container.clientWidth / ORTHOGRAPHIC_CAMERA_DEFAULT_VALUES.leftDivisor,
+    container.clientWidth / ORTHOGRAPHIC_CAMERA_DEFAULT_VALUES.rightDivisor,
+    container.clientHeight / ORTHOGRAPHIC_CAMERA_DEFAULT_VALUES.topDivisor,
+    container.clientHeight / ORTHOGRAPHIC_CAMERA_DEFAULT_VALUES.bottomDivisor,
+    ORTHOGRAPHIC_CAMERA_DEFAULT_VALUES.near,
+    ORTHOGRAPHIC_CAMERA_DEFAULT_VALUES.far,
   );
-  camera.position.z = 5;
+  camera.position.z = ORTHOGRAPHIC_CAMERA_DEFAULT_VALUES.z;
 
   return camera;
 };
 
+/**
+ * Creates new orbit controls for a scene.
+ *
+ * @param {Camera} camera Camera for scene.
+ * @param {HTMLElement} container Three.js canvas element.
+ * @returns {OrbitControls} Controls for scene.
+ */
 export const createOrbitControls = (camera: Camera, container: HTMLElement): OrbitControls => {
   const controls = new OrbitControls(camera, container);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.25;
-  controls.enableZoom = true;
-  controls.maxDistance = 100;
-  controls.minDistance = 0.001;
+  controls.enableDamping = ORBIT_CONTROLS_DEFAULT_VALUES.enableDamping as boolean;
+  controls.dampingFactor = ORBIT_CONTROLS_DEFAULT_VALUES.dampingFactor as number;
+  controls.enableZoom = ORBIT_CONTROLS_DEFAULT_VALUES.enableZoom as boolean;
+  controls.maxDistance = ORBIT_CONTROLS_DEFAULT_VALUES.maxDistance as number;
+  controls.minDistance = ORBIT_CONTROLS_DEFAULT_VALUES.minDistance as number;
 
   return controls;
 };
 
+/**
+ * Creates a new Three.js scene.
+ *
+ * @returns {Scene} New scene.
+ */
 export const createScene = (): Scene => {
   const scene = new Scene();
   scene.background = BACKGROUND_COLOR;
@@ -82,6 +119,12 @@ export const createScene = (): Scene => {
   return scene;
 };
 
+/**
+ * Creates a new WebGLRenderer.
+ *
+ * @param {HTMLElement} container Three.js canvas element.
+ * @returns {WebGLRenderer} Three.js renderer.
+ */
 export const createRenderer = (container: HTMLElement): WebGLRenderer => {
   const renderer = new WebGLRenderer({ antialias: true });
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -92,6 +135,12 @@ export const createRenderer = (container: HTMLElement): WebGLRenderer => {
   return renderer;
 };
 
+/**
+ * Applies for to a Three.js scene.
+ *
+ * @param {Scene} scene Three.js scene to add fog to.
+ * @param {string} modifier Type of fog.
+ */
 export const applyFog = (scene: Scene, modifier: string | undefined = undefined) => {
   if (modifier === undefined) {
     scene.fog = new Fog(BACKGROUND_COLOR, 0.0025, 50);
@@ -100,8 +149,24 @@ export const applyFog = (scene: Scene, modifier: string | undefined = undefined)
   }
 };
 
+/**
+ * Adds random offset to coordinates to avoid Three.js conflicts.
+ *
+ * @param {number} value Value to add offset to.
+ * @returns {number} Value with offset.
+ */
 const applyRandomOffset = (value: number) => value + Math.floor(Math.random() * 10000) * 0.000001;
 
+/**
+ * Adds a point to the Three.js scene.
+ *
+ * @param {Scene} scene Three.js scene to add point to.
+ * @param {number} x X coordinate of point.
+ * @param {number} y Y coordinate of point.
+ * @param {number} z Z coordinate of point.
+ * @param {Color} [color = undefined] Color of the point.
+ * @returns {Mesh} Mesh of point added to scene.
+ */
 export const addPointMeshToScene = (
   scene: Scene,
   x: number,
@@ -117,7 +182,7 @@ export const addPointMeshToScene = (
     });
   }
 
-  const mesh = new Mesh(POINT_GEOMETRY, usedMaterial);
+  const mesh = new Mesh(DEFAULT_POINT_GEOMETRY, usedMaterial);
 
   mesh.position.x = applyRandomOffset(x);
   mesh.position.y = applyRandomOffset(y);
@@ -128,23 +193,25 @@ export const addPointMeshToScene = (
   return mesh;
 };
 
-export const addLargePointMeshToScene = (
-  scene: Scene,
-  x: number,
-  y: number,
-  z: number,
-): Mesh => {
-  const mesh = new Mesh(LARGE_POINT_GEOMETRY, POINT_MATERIAL);
-
-  mesh.position.x = applyRandomOffset(x);
-  mesh.position.y = applyRandomOffset(y);
-  mesh.position.z = applyRandomOffset(z);
-
-  scene.add(mesh);
-
-  return mesh;
-};
-
+/**
+ * Adds a text mesh to the Three.js scene.
+ *
+ * @param {Scene} scene Three.js scene to add point to.
+ * @param {string} text Text of the text mesh.
+ * @param {number} x X coordinate of point.
+ * @param {number} y Y coordinate of point.
+ * @param {number} z Z coordinate of point.
+ * @param {number} size
+ * @param {number} height
+ * @param {number} curveSegments
+ * @param {number} bevelEnabled
+ * @param {number} bevelThickness
+ * @param {number} bevelSize
+ * @param {number} bevelOffset
+ * @param {number} bevelSegments
+ * @param {number} [color = undefined] Color of the text mesh.
+ * @returns {Mesh} Mesh of point added to scene.
+ */
 export const addTextMeshToScene = async (
   scene: Scene,
   text: string,
@@ -197,6 +264,12 @@ export const addTextMeshToScene = async (
   return mesh;
 };
 
+/**
+ * Adds an ambient light to the Three.js scene.
+ *
+ * @param {Scene} scene Three.js scene to add ambient light to.
+ * @returns {AmbientLight} Ambient light added to scene.
+ */
 export const addAmbientLightToScene = (scene: Scene): AmbientLight => {
   const light = new AmbientLight(0x000000);
 
@@ -205,6 +278,12 @@ export const addAmbientLightToScene = (scene: Scene): AmbientLight => {
   return light;
 };
 
+/**
+ * Adds a directional light to the Three.js scene.
+ *
+ * @param {Scene} scene Three.js scene to add directional light to. 
+ * @returns {DirectionalLight} Directional light added to scene.
+ */
 export const addDirectionLightToScene = (scene: Scene): DirectionalLight => {
   const light = new DirectionalLight(0xffffff, 1.3);
 
@@ -215,6 +294,12 @@ export const addDirectionLightToScene = (scene: Scene): DirectionalLight => {
   return light;
 };
 
+/**
+ * Adds a point light to the Three.js scene.
+ *
+ * @param {Scene} scene Three.js scene to add point light to.  
+ * @returns {PointLight} Point light added to scene.
+ */
 export const addPointLightToScene = (scene: Scene): PointLight => {
   const light = new PointLight(0xffffff, 0.05, 100);
   light.position.set(50, 50, 50);
@@ -222,125 +307,4 @@ export const addPointLightToScene = (scene: Scene): PointLight => {
   scene.add(light);
 
   return light;
-};
-
-// https://stackoverflow.com/questions/17433015/change-the-hue-of-a-rgb-color-in-javascript\
-function normalize_rgb_value(color: number, m: number) {
-  color = Math.floor((color + m) * 255);
-  if (color < 0) {
-    color = 0;
-  }
-  return color;
-}
-
-const hslToRGB = (hsl: Record<string, number>): Record<string, number> => {
-  const { h } = hsl;
-  const { s } = hsl;
-  const { l } = hsl;
-  const c = (1 - Math.abs(2 * l - 1)) * s;
-  // eslint-disable-next-line no-mixed-operators
-  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
-  const m = l - c / 2;
-  let r = 0;
-  let g = 0;
-  let b = 0;
-
-  if (h < 60) {
-    r = c;
-    g = x;
-    b = 0;
-  } else if (h < 120) {
-    r = x;
-    g = c;
-    b = 0;
-  } else if (h < 180) {
-    r = 0;
-    g = c;
-    b = x;
-  } else if (h < 240) {
-    r = 0;
-    g = x;
-    b = c;
-  } else if (h < 300) {
-    r = x;
-    g = 0;
-    b = c;
-  } else {
-    r = c;
-    g = 0;
-    b = x;
-  }
-
-  r = normalize_rgb_value(r, m);
-  g = normalize_rgb_value(g, m);
-  b = normalize_rgb_value(b, m);
-
-  return {
-    r,
-    g,
-    b,
-  };
-};
-
-const rgbToHSL = (rgb: string): Record<string, number> => {
-  // strip the leading # if it's there
-  rgb = rgb.replace(/^\s*#|\s*$/g, '');
-
-  // convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
-  if (rgb.length === 3) {
-    rgb = rgb.replace(/(.)/g, '$1$1');
-  }
-
-  const r = parseInt(rgb.substr(0, 2), 16) / 255;
-  const g = parseInt(rgb.substr(2, 2), 16) / 255;
-  const b = parseInt(rgb.substr(4, 2), 16) / 255;
-  const cMax = Math.max(r, g, b);
-  const cMin = Math.min(r, g, b);
-  const delta = cMax - cMin;
-  const l = (cMax + cMin) / 2;
-  let h = 0;
-  let s = 0;
-
-  if (delta === 0) {
-    h = 0;
-  } else if (cMax === r) {
-    h = 60 * (((g - b) / delta) % 6);
-  } else if (cMax === g) {
-    h = 60 * (((b - r) / delta) + 2);
-  } else {
-    h = 60 * (((r - g) / delta) + 4);
-  }
-
-  if (delta === 0) {
-    s = 0;
-  } else {
-    s = (delta / (1 - Math.abs(2 * l - 1)));
-  }
-
-  return {
-    h,
-    s,
-    l,
-  };
-};
-
-const changeHue = (rgb: string, degree: number): Record<string, number> => {
-  const hsl = rgbToHSL(rgb);
-  hsl.h += degree;
-  if (hsl.h > 360) {
-    hsl.h -= 360;
-  } else if (hsl.h < 0) {
-    hsl.h += 360;
-  }
-  return hslToRGB(hsl);
-};
-
-export const getColor = (hue: number): Color => {
-  const red = '#FF0000';
-  const newColor = changeHue(red, hue * 360);
-  return new Color(
-    newColor.r,
-    newColor.g,
-    newColor.b,
-  );
 };

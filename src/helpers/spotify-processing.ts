@@ -1,5 +1,3 @@
-import SpotifyApi from 'spotify-web-api-node';
-
 import api from '@/api';
 
 export interface TrackAudioFeatures {
@@ -27,12 +25,23 @@ export interface Track {
   audioFeatures: TrackAudioFeatures;
 }
 
+/**
+ * Retrieves number of saved tracks in user's library.
+ *
+ * @returns {Promise<number>}
+ */
 export const getNumberSavedTracks = async () => {
   const response = await api.spotify.library.getSavedTracks(0, 1);
 
   return response.body.total;
 };
 
+/**
+ * Retrieves user's saved tracks on offset and condenses objects.
+ *
+ * @param {number} offset Where to start retrieving tracks.
+ * @returns {Promise<CondensedSavedTrack[]>}
+ */
 export const getSavedTracks = async (offset: number) => {
   const response = await api.spotify.library.getSavedTracks(offset);
 
@@ -46,7 +55,13 @@ export const getSavedTracks = async (offset: number) => {
   });
 };
 
-export const getTracksAudioFeatures = async (tracks: Array<SpotifyApi.TrackObjectFull>) => {
+/**
+ * Retrieve's track audio features.
+ *
+ * @param {SpotifyApi.TrackObjectFull[]} tracks Track objects.
+ * @returns {Promise<TrackAudioFeatures[]>}
+ */
+export const getTracksAudioFeatures = async (tracks: SpotifyApi.TrackObjectFull[]) => {
   const ids = tracks.map((track) => track.id);
 
   const response = await api.spotify.tracks.getTracksAudioFeatures(ids);
@@ -54,33 +69,49 @@ export const getTracksAudioFeatures = async (tracks: Array<SpotifyApi.TrackObjec
   return response.body.audio_features;
 };
 
+const canConvertTrack = (
+  track: CondensedSavedTrack,
+  audioFeatures: SpotifyApi.AudioFeaturesObject,
+): boolean => (audioFeatures
+  && Number.isNaN(audioFeatures.acousticness) === false
+  && Number.isNaN(audioFeatures.danceability) === false
+  && Number.isNaN(audioFeatures.energy) === false
+  && Number.isNaN(audioFeatures.instrumentalness) === false
+  && Number.isNaN(audioFeatures.liveness) === false
+  && Number.isNaN(audioFeatures.speechiness) === false
+  && Number.isNaN(audioFeatures.tempo) === false
+  && Number.isNaN(audioFeatures.valence) === false
+  && Number.isNaN(track.popularity) === false
+  && track.album !== null
+  && track.album.images.length > 0
+  && track.album.images[0].url !== null);
+
+/**
+ * Converts tracks to a format that can be used for clustering.
+ *
+ * @param {Record<string, Track>} tracks Track objects converted to be added to.
+ * @param {CondensedSavedTrack[]} savedTracks Track objects to be converted.
+ * @param {SpotifyApi.AudioFeaturesObject[]} audioFeatures Track audio feature data to be converted.
+ * @param {number} index Offset of track's to be added
+ * @param {number} last Last track added date so far.
+ * @param {number} first First track added date so far.
+ * @returns {Promise<Record<string, number>>}
+ */
 export const convertTracks = async (
   tracks: Record<string, Track>,
-  savedTracks: Array<CondensedSavedTrack>,
+  savedTracks: CondensedSavedTrack[],
   audioFeatures: SpotifyApi.AudioFeaturesObject[],
   index: number,
   last: number,
   first: number,
 ): Promise<Record<string, number>> => {
-  const sample: Array<Track> = [];
+  const sample: Track[] = [];
 
   let newLast = last;
   let newFirst = first;
 
   for (let i = 0; i < savedTracks.length; i += 1) {
-    if (audioFeatures[i]
-      && Number.isNaN(audioFeatures[i].acousticness) === false
-      && Number.isNaN(audioFeatures[i].danceability) === false
-      && Number.isNaN(audioFeatures[i].energy) === false
-      && Number.isNaN(audioFeatures[i].instrumentalness) === false
-      && Number.isNaN(audioFeatures[i].liveness) === false
-      && Number.isNaN(audioFeatures[i].speechiness) === false
-      && Number.isNaN(audioFeatures[i].tempo) === false
-      && Number.isNaN(audioFeatures[i].valence) === false
-      && Number.isNaN(savedTracks[i].popularity) === false
-      && savedTracks[i].album
-      && savedTracks[i].album.images.length
-      && savedTracks[i].album.images[0].url) {
+    if (canConvertTrack(savedTracks[i], audioFeatures[i])) {
       if (savedTracks[i].added > newLast) {
         newLast = savedTracks[i].added;
       }

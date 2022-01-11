@@ -39,12 +39,12 @@ import {
   createPerspectiveCamera,
   createRenderer,
   createScene,
-  getColor,
   getContainer,
 } from '@/helpers/three';
+import { getColor } from '@/helpers/colors';
 import Player from '@/components/Player.vue';
 import ProgressDetails from '@/components/ProgressDetails.vue';
-import { Track } from '@/helpers/spotify';
+import { Track } from '@/helpers/spotify-processing';
 
 interface IData {
   camera: PerspectiveCamera | null;

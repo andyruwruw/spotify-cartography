@@ -36,7 +36,7 @@ import {
   createScene,
   getContainer,
 } from '@/helpers/three';
-import { Track } from '@/helpers/spotify';
+import { Track } from '@/helpers/spotify-processing';
 
 interface IData {
   showTitle: boolean;

@@ -126,7 +126,7 @@ const actions: ActionTree<PlayerModuleState, any> = {
       player.addListener('ready', (event: Record<string, string>) => {
         commit('setDeviceId', event.device_id);
 
-        // api.spotify.playback.transferUsersPlayback([event.device_id], true);
+        api.spotify.playback.transferUsersPlayback([event.device_id], true);
       });
 
       player.addListener('not_ready', (event: Record<string, string>) => {
@@ -136,7 +136,7 @@ const actions: ActionTree<PlayerModuleState, any> = {
       const connected = await player.connect();
 
       if (connected) {
-        // await waitUntilUserHasSelectedPlayer(player);
+        await waitUntilUserHasSelectedPlayer(player);
       }
     })();
   },

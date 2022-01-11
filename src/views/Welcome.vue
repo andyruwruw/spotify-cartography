@@ -1,16 +1,9 @@
 <template>
   <div :class="$style.component">
-    <div
-      id="container"
-      :class="[
-        $style.container,
-        {
-          [$style.hovering]: hoverLogin || hoverExample,
-        },
-      ]"
-      @click="handleClick" />
 
     <samples v-if="samplesMenu" />
+
+    <floating-background />
   </div>
 </template>
 
@@ -40,6 +33,7 @@ import {
   addAmbientLightToScene,
   addPointMeshToScene,
 } from '@/helpers/three';
+import FloatingBackground from '@/components/ui/FloatingBackground.vue';
 import Samples from '@/components/Samples.vue';
 
 export default Vue.extend({
@@ -47,6 +41,7 @@ export default Vue.extend({
 
   components: {
     Samples,
+    FloatingBackground,
   },
 
   data: () => ({
@@ -235,12 +230,12 @@ export default Vue.extend({
   },
 
   async mounted() {
-    window.addEventListener('mousemove', this.trackMouse);
+    // window.addEventListener('mousemove', this.trackMouse);
 
-    this.start = Date.now();
+    // this.start = Date.now();
 
-    await this.initialize();
-    this.animate();
+    // await this.initialize();
+    // this.animate();
   },
 });
 </script>
