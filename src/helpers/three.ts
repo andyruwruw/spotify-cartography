@@ -281,7 +281,7 @@ export const addAmbientLightToScene = (scene: Scene): AmbientLight => {
 /**
  * Adds a directional light to the Three.js scene.
  *
- * @param {Scene} scene Three.js scene to add directional light to. 
+ * @param {Scene} scene Three.js scene to add directional light to.
  * @returns {DirectionalLight} Directional light added to scene.
  */
 export const addDirectionLightToScene = (scene: Scene): DirectionalLight => {
@@ -297,7 +297,7 @@ export const addDirectionLightToScene = (scene: Scene): DirectionalLight => {
 /**
  * Adds a point light to the Three.js scene.
  *
- * @param {Scene} scene Three.js scene to add point light to.  
+ * @param {Scene} scene Three.js scene to add point light to.
  * @returns {PointLight} Point light added to scene.
  */
 export const addPointLightToScene = (scene: Scene): PointLight => {

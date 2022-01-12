@@ -26,6 +26,11 @@ const routes: Array<RouteConfig> = [
     name: 'Exploring',
     component: () => import('@/views/Exploring.vue'),
   },
+  {
+    path: '/menu',
+    name: 'Menu',
+    component: () => import('@/views/Menu.vue'),
+  },
 ];
 
 const router = new VueRouter({

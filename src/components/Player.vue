@@ -2,7 +2,7 @@
   <div>
     <div
       :class="[$style.tabs, {
-        [$style['tabs-active']]: tab !== 'none',
+        [$style['tabs-active']]: tab !== requestTypes.NONE,
       }]">
       <div
         :class="$style.tab"
@@ -22,7 +22,7 @@
     </div>
 
     <div
-      v-if="tab !== 'none'"
+      v-if="tab !== requestTypes.NONE"
       :class="$style['open-tabs']">
       <process v-if="tab === 'tsne'" />
 
@@ -404,6 +404,7 @@
 import Vue from 'vue';
 import moment from 'moment';
 
+import { REQUEST_TYPE } from '@/config';
 import Process from './Process.vue';
 import Help from './Help.vue';
 
@@ -427,8 +428,9 @@ export default Vue.extend({
   },
 
   data: () => ({
-    tab: 'none',
+    tab: REQUEST_TYPE.NONE,
     opened: 0,
+    requestTypes: REQUEST_TYPE,
   }),
 
   methods: {
@@ -438,7 +440,7 @@ export default Vue.extend({
 
     openTab(id: string) {
       if (id === this.tab) {
-        this.tab = 'none';
+        this.tab = REQUEST_TYPE.NONE;
       } else if (Date.now() - this.opened > 500) {
         this.tab = id;
         this.opened = Date.now();

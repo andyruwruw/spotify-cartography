@@ -1,12 +1,12 @@
 // https://stackoverflow.com/questions/17433015/change-the-hue-of-a-rgb-color-in-javascript\
-import { Color } from "three";
+import { Color } from 'three';
 
 /**
  * Normalizes RGB values to be between 0 and 255.
  *
- * @param color 
- * @param m 
- * @returns 
+ * @param color
+ * @param m
+ * @returns
  */
 function normalize_rgb_value(color: number, m: number) {
   color = Math.floor((color + m) * 255);
@@ -19,8 +19,8 @@ function normalize_rgb_value(color: number, m: number) {
 /**
  * Turns HSL color values into RGB.
  *
- * @param hsl 
- * @returns 
+ * @param hsl
+ * @returns
  */
 const hslToRGB = (hsl: Record<string, number>): Record<string, number> => {
   const { h } = hsl;
@@ -74,8 +74,8 @@ const hslToRGB = (hsl: Record<string, number>): Record<string, number> => {
 /**
  * Turns RGB color values into HSL.
  *
- * @param rgb 
- * @returns 
+ * @param rgb
+ * @returns
  */
 const rgbToHSL = (rgb: string): Record<string, number> => {
   // strip the leading # if it's there
@@ -122,9 +122,9 @@ const rgbToHSL = (rgb: string): Record<string, number> => {
 /**
  * Changes the hue of an RGB color by a certain number of degrees.
  *
- * @param rgb 
- * @param degree 
- * @returns 
+ * @param rgb
+ * @param degree
+ * @returns
  */
 const changeHue = (rgb: string, degree: number): Record<string, number> => {
   const hsl = rgbToHSL(rgb);
@@ -140,8 +140,8 @@ const changeHue = (rgb: string, degree: number): Record<string, number> => {
 /**
  * Retrives a color based on numerical hue.
  *
- * @param hue 
- * @returns 
+ * @param hue
+ * @returns
  */
 export const getColor = (hue: number): Color => {
   const red = '#FF0000';

@@ -134,9 +134,12 @@ export default Vue.extend({
 
   computed: {
     ...mapGetters('data', [
+      'getTracks',
+    ]),
+
+    ...mapGetters('map', [
       'getPerplexity',
       'getEpsilon',
-      'getTracks',
       'getIterations',
       'getCurrentIteration',
       'isProcessDone',
@@ -158,14 +161,14 @@ export default Vue.extend({
   },
 
   methods: {
-    ...mapActions('data', [
+    ...mapActions('map', [
       'processData',
       'abort',
       'save',
     ]),
 
     changeSettings() {
-      this.$store.dispatch('data/changeSettings', {
+      this.$store.dispatch('map/changeSettings', {
         perplexity: this.perplexity.val,
         epsilon: this.epsilon.val,
         iterations: this.iterations.val,

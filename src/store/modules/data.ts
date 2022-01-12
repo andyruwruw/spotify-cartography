@@ -4,7 +4,6 @@ import {
   Module,
   MutationTree,
 } from 'vuex';
-import { TSNE } from '@keckelt/tsne';
 
 import {
   convertTracks,
@@ -15,21 +14,11 @@ import {
 } from '@/helpers/spotify-processing';
 import { downloadJson } from '@/helpers/file';
 import * as ALL_10_1050_TRACKS from '@/assets/examples/all-10-1050-tracks.json';
-import * as ALL_10_1050_GRAPH from '@/assets/examples/all-10-1050-graph.json';
 import * as SMALL_5_10_1000_TRACKS from '@/assets/examples/small-5-10-1000-tracks.json';
-import * as SMALL_5_10_1000_GRAPH from '@/assets/examples/small-5-10-1000-graph.json';
 import * as SMALL_10_10_1000_TRACKS from '@/assets/examples/small-10-10-1000-tracks.json';
-import * as SMALL_10_10_1000_GRAPH from '@/assets/examples/small-10-10-1000-graph.json';
 import * as SMALL_30_10_1000_TRACKS from '@/assets/examples/small-30-10-1000-tracks.json';
-import * as SMALL_30_10_1000_GRAPH from '@/assets/examples/small-30-10-1000-graph.json';
 import * as SMALL_100_10_1000_TRACKS from '@/assets/examples/small-100-10-1000-tracks.json';
-import * as SMALL_100_10_1000_GRAPH from '@/assets/examples/small-100-10-1000-graph.json';
-
-interface GraphData {
-  default: {
-    graph: Array<Array<number>>;
-  }
-}
+import moment from 'moment';
 
 interface TrackData {
   default: {
@@ -39,48 +28,54 @@ interface TrackData {
 
 export interface DataModuleState {
   progress: number;
-  progressSample: Array<Track>;
+  total: number;
+  type: string;
+  timeRange: string;
+  limit: number;
+  offset: number;
+  playlistIds: string[];
+  albumIds: string[];
+  artistIds: string[];
   tracks: Record<string, Track>;
-  graph: Array<Array<number>>;
   done: boolean;
-  tsne: null | TSNE;
   first: number;
   last: number;
-  perplexity: number;
-  epsilon: number;
-  iterations: number;
-  currentIteration: number;
-  processDone: boolean;
-  update: number;
-  abort: boolean;
 }
 
 const defaultState = (): DataModuleState => ({
   progress: 0,
-  progressSample: [] as Array<Track>,
+  total: -1,
+  type: '',
+
+  timeRange: '',
+
+  limit: -1,
+  offset: -1,
+
+  playlistIds: [],
+  albumIds: [],
+  artistIds: [],
+
   tracks: {},
-  graph: [],
+
   done: false,
-  tsne: null,
+
   first: Date.now(),
   last: 0,
-  perplexity: 1,
-  epsilon: 10,
-  iterations: 1,
-  currentIteration: 1,
-  processDone: true,
-  update: 1,
-  abort: false,
 });
 
 const getters: GetterTree<DataModuleState, any> = {
   getProgress: (state): number => state.progress,
-  getProgressSample: (state): Array<Track> => state.progressSample,
+  getTotal: (state): number => state.total,
+  getType: (state): string => state.type,
+  getTimeRange: (state): string => state.timeRange,
+  getLimit: (state): number => state.limit,
+  getOffset: (state): number => state.offset,
+  getPlaylistIds: (state): string[] => state.playlistIds,
+  getAlbumIds: (state): string[] => state.albumIds,
+  getArtistIds: (state): string[] => state.artistIds,
   getTracks(state): Record<string, Track> {
     return state.tracks;
-  },
-  getGraph(state): Array<Array<number>> {
-    return state.graph;
   },
   isDone(state): boolean {
     return state.done;
@@ -88,83 +83,61 @@ const getters: GetterTree<DataModuleState, any> = {
   getFirstAndLast(state): [number, number] {
     return [state.first, state.last];
   },
-  getPerplexity(state): number {
-    return state.perplexity;
-  },
-  getEpsilon(state): number {
-    return state.epsilon;
-  },
-  getIterations(state): number {
-    return state.iterations;
-  },
-  getCurrentIteration(state): number {
-    return state.currentIteration;
-  },
-  isProcessDone(state): boolean {
-    return state.processDone;
-  },
-  getTSNE(state): TSNE {
-    return state.tsne as TSNE;
-  },
-  getUpdate(state): number {
-    return state.update;
-  },
-  isAbort(state): boolean {
-    return state.abort;
-  },
 };
 
 const mutations: MutationTree<DataModuleState> = {
   setProgress(state, progress: number) {
     state.progress = progress;
   },
-  setProgressSample(state, sample: Array<Track>) {
-    state.progressSample = sample;
+  setTotal(state, total: number) {
+    state.total = total;
+  },
+  setType(state, type: string) {
+    state.type = type;
+  },
+  setTimeRange(state, timeRange: string) {
+    state.timeRange = timeRange;
+  },
+  setLimit(state, limit: number) {
+    state.limit = limit;
+  },
+  setOffset(state, offset: number) {
+    state.offset = offset;
+  },
+  setPlaylistIds(state, playlistIds: string[]) {
+    state.playlistIds = playlistIds;
+  },
+  setAlbumIds(state, albumIds: string[]) {
+    state.albumIds = albumIds;
+  },
+  setArtistIds(state, artistIds: string[]) {
+    state.artistIds = artistIds;
   },
   setTracks(state, tracks: Record<string, Track>) {
     state.tracks = tracks;
   },
-  setGraph(state, graph: Array<Array<number>>) {
-    state.graph = graph;
-  },
   setDone(state, done: boolean) {
     state.done = done;
-  },
-  setTSNE(state, tsne: TSNE) {
-    state.tsne = tsne;
   },
   setFirstAndLast(state, { first, last }) {
     state.first = first;
     state.last = last;
   },
-  setPerplexity(state, perplexity: number) {
-    state.perplexity = perplexity;
-  },
-  setEpsilon(state, epsilon: number) {
-    state.epsilon = epsilon;
-  },
-  setIterations(state, iterations: number) {
-    state.iterations = iterations;
-  },
-  setCurrentIteration(state, iteration: number) {
-    state.currentIteration = iteration;
-  },
-  setProcessState(state, done: boolean) {
-    state.processDone = done;
-  },
-  bumpUpdate(state) {
-    state.update = (state.update + 1) % 100;
-  },
-  setAbort(state, abort: boolean) {
-    state.abort = abort;
-  },
 };
 
 const actions: ActionTree<DataModuleState, any> = {
-  async collectData({ commit, dispatch }) {
+  async getTotal({ commit }) {
+    commit('setTotal', await getNumberSavedTracks());
+  },
+
+  async collectData({ commit, rootGetters, dispatch }) {
     commit('setDone', false);
 
-    const total = await getNumberSavedTracks();
+    if (rootGetters['data/getTotal'] === -1) {
+      dispatch('getTotal');
+    }
+
+    const total = rootGetters['data/getTotal'];
 
     const tracks = {};
 
@@ -202,91 +175,8 @@ const actions: ActionTree<DataModuleState, any> = {
     commit('setTracks', tracks);
   },
 
-  changeSettings({ commit }, { perplexity, epsilon, iterations }) {
-    commit('setPerplexity', perplexity);
-    commit('setEpsilon', epsilon);
-    commit('setIterations', iterations);
-  },
-
-  async firstProcess({ rootGetters, commit, dispatch }) {
-    const tracks = Object.values(rootGetters['data/getTracks'] as Record<string, Track>);
-
-    commit('setPerplexity', Math.round(tracks.length ** 0.5));
-    commit('setEpsilon', 10);
-    commit('setIterations', 1);
-
-    dispatch('processData');
-  },
-
-  async processData({ commit, rootGetters, dispatch }) {
-    commit('setProcessState', false);
-    const tracks = Object.values(rootGetters['data/getTracks'] as Record<string, Track>);
-    const vectors = tracks.map((track: Track) => [
-      track.audioFeatures.valence,
-      track.audioFeatures.energy,
-      track.audioFeatures.danceability,
-      track.audioFeatures.acousticness,
-      track.audioFeatures.liveness,
-      track.audioFeatures.speechiness,
-      track.audioFeatures.instrumentalness,
-      track.audioFeatures.tempo,
-      track.audioFeatures.popularity,
-    ]);
-
-    if (tracks.length === 0) {
-      return;
-    }
-
-    const opt = {
-      epsilon: rootGetters['data/getEpsilon'] as number,
-      perplexity: rootGetters['data/getPerplexity'] as number,
-      dim: 3,
-    };
-
-    const tsne = new TSNE(opt);
-    commit('setTSNE', tsne);
-
-    tsne.initDataRaw(vectors);
-
-    const iterations = rootGetters['data/getIterations'];
-    commit('setCurrentIteration', 0);
-
-    setTimeout(() => dispatch('step', { iteration: 0 }), 0);
-  },
-
-  async step({ commit, rootGetters, dispatch }, { iteration }) {
-    if (iteration === rootGetters['data/getIterations'] || rootGetters['data/isAbort']) {
-      if (rootGetters['data/isAbort']) {
-        commit('setAbort', false);
-      }
-
-      const graph = rootGetters['data/getTSNE'].getSolution();
-      commit('setGraph', graph);
-
-      commit('setProcessState', true);
-      commit('bumpUpdate');
-      return;
-    }
-
-    commit('setCurrentIteration', iteration + 1);
-
-    await rootGetters['data/getTSNE'].step();
-
-    if (iteration % 10 === 0) {
-      const graph = rootGetters['data/getTSNE'].getSolution();
-      commit('setGraph', graph);
-      commit('bumpUpdate');
-    }
-
-    setTimeout(() => dispatch('step', { iteration: iteration + 1 }), 0);
-  },
-
-  abort({ commit }) {
-    commit('setAbort', true);
-  },
-
   async save({ rootGetters }) {
-    const graph = rootGetters['data/getGraph'];
+    const graph = rootGetters['map/getGraph'];
     const tracks = rootGetters['data/getTracks'];
 
     const data = {
@@ -294,35 +184,23 @@ const actions: ActionTree<DataModuleState, any> = {
       tracks,
     };
 
-    downloadJson(data, 'data.json');
+    downloadJson(data, `spotify-cartography-data-${moment().format()}.json`);
   },
 
-  loadExampleData({ commit }, key) {
-    let graphs;
+  loadExampleData({ commit, dispatch }, key) {
+    dispatch('map/loadExampleData', key, { root: true });
     let tracks;
-    let perplexity = 10;
-    const iterations = 1000;
 
     if (key === 'all') {
-      graphs = (ALL_10_1050_GRAPH as unknown as GraphData).default.graph;
       tracks = (ALL_10_1050_TRACKS as unknown as TrackData).default.tracks;
-      perplexity = 80;
     } else if (key === 'small') {
-      graphs = (SMALL_5_10_1000_GRAPH as unknown as GraphData).default.graph;
       tracks = (SMALL_5_10_1000_TRACKS as unknown as TrackData).default.tracks;
-      perplexity = 5;
     } else if (key === 'medium') {
-      graphs = (SMALL_10_10_1000_GRAPH as unknown as GraphData).default.graph;
       tracks = (SMALL_10_10_1000_TRACKS as unknown as TrackData).default.tracks;
-      perplexity = 10;
     } else if (key === 'large') {
-      graphs = (SMALL_30_10_1000_GRAPH as unknown as GraphData).default.graph;
       tracks = (SMALL_30_10_1000_TRACKS as unknown as TrackData).default.tracks;
-      perplexity = 30;
     } else if (key === 'x-large') {
-      graphs = (SMALL_100_10_1000_GRAPH as unknown as GraphData).default.graph;
       tracks = (SMALL_100_10_1000_TRACKS as unknown as TrackData).default.tracks;
-      perplexity = 100;
     }
 
     const keys = Object.keys(tracks as Record<string, Track>);
@@ -343,13 +221,35 @@ const actions: ActionTree<DataModuleState, any> = {
     }
 
     commit('setTracks', tracks);
-    commit('setGraph', graphs);
-
     commit('setFirstAndLast', { first, last });
+  },
 
-    commit('setPerplexity', perplexity);
-    commit('setEpsilon', 10);
-    commit('setIterations', iterations);
+  changeSettingsType({ commit }, type) {
+    commit('setType', type);
+  },
+
+  changeSettingsTimeRange({ commit }, timeRange) {
+    commit('setTimeRange', timeRange);
+  },
+
+  changeSettingsLimit({ commit }, limit) {
+    commit('setLimit', limit);
+  },
+
+  changeSettingsOffset({ commit }, offset) {
+    commit('setOffset', offset);
+  },
+
+  changeSettingsPlaylistIds({ commit }, playlistIds) {
+    commit('setPlaylistIds', playlistIds);
+  },
+
+  changeSettingsAlbumIds({ commit }, albumIds) {
+    commit('setPlaylistIds', albumIds);
+  },
+
+  changeSettingsArtistIds({ commit }, artistIds) {
+    commit('setPlaylistIds', artistIds);
   },
 };
 

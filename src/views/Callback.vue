@@ -9,10 +9,11 @@ import Vue from 'vue';
 export default Vue.extend({
   name: 'Callback',
 
-  created() {
-    this.$store.dispatch('auth/callback', this.$route.hash.split('&')[0].slice(14));
+  async created() {
+    await this.$store.dispatch('auth/callback', this.$route.hash.split('&')[0].slice(14));
+    this.$store.dispatch('data/getTotal');
 
-    this.$router.push('/exploring');
+    this.$router.push('/menu');
   },
 });
 </script>

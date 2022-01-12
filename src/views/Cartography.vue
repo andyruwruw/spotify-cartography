@@ -105,11 +105,15 @@ export default Vue.extend<IData, IMethods, IComputed>({
   computed: {
     ...mapGetters('data', [
       'getTracks',
-      'getGraph',
       'getFirstAndLast',
+    ]),
+
+    ...mapGetters('map', [
+      'getGraph',
       'isProcessDone',
       'getUpdate',
     ]),
+
     ...mapGetters('auth', [
       'isAuthenticated',
     ]),
@@ -128,7 +132,7 @@ export default Vue.extend<IData, IMethods, IComputed>({
     }
 
     if (this.isAuthenticated) {
-      await this.$store.dispatch('data/firstProcess');
+      await this.$store.dispatch('map/firstProcess');
     }
 
     await this.initialize();
@@ -147,14 +151,16 @@ export default Vue.extend<IData, IMethods, IComputed>({
   },
 
   methods: {
-    ...mapActions('data', [
+    ...mapActions('map', [
       'processData',
     ]),
 
     handleClick() {
       if (this.hovered !== -1) {
-        this.$store.dispatch('player/play', this.getTracks[this.hovered].id);
-        this.playing = this.hovered;
+        if (this.isAuthenticated) {
+          this.$store.dispatch('player/play', this.getTracks[this.hovered].id);
+          this.playing = this.hovered;
+        }
       }
     },
 

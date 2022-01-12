@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100;0,200;0,300;0,400;1,600&display=swap');
 
 p,
 span,
@@ -12,6 +12,28 @@ h4 {
 
 .theme--light.v-application {
   background: #191927;
+}
+
+.v-menu__content {
+  .v-list.v-select-list {
+    background: #2c2c3d;
+
+    .v-list-item {
+      .v-list-item__content {
+        .v-list-item__title {
+          color: white;
+        }
+      }
+
+      &.v-list-item--active {
+        .v-list-item__content {
+          .v-list-item__title {
+            color: inherit
+          }
+        }
+      }
+    }
+  }
 }
 
 #container {

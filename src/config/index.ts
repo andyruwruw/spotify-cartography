@@ -50,6 +50,7 @@ export const SCOPES = [
   'user-top-read',
   'user-read-email',
   'user-read-private',
+  'playlist-read-private',
 ];
 
 /**
@@ -61,35 +62,35 @@ export const MARKET = 'US';
 
 /**
  * Element ID for Three.js canvas.
- * 
+ *
  * @type {string}
  */
 export const THREE_CONTAINER_ID = 'container';
 
 /**
  * Static view distance for Three.js camera.
- * 
+ *
  * @type {number}
  */
 export const THREE_VIEW_DISTANCE = 10000;
 
 /**
  * Background color for Three.js scene.
- * 
+ *
  * @type {number}
  */
 export const THREE_BACKGROUND_COLOR = 0x191927;
 
 /**
  * Default color for Three.js material.
- * 
+ *
  * @type {number}
  */
 export const THREE_DEFAULT_MATERIAL_COLOR = 0xffffff;
 
 /**
  * Values for Point Geometry.
- * 
+ *
  * @type {Record<string, number>}
  */
 export const POINT_GEOMETRY_DEFAULT_VALUES: Record<string, number> = {
@@ -100,7 +101,7 @@ export const POINT_GEOMETRY_DEFAULT_VALUES: Record<string, number> = {
 
 /**
  * Default parameters for Three.js perspective camera.
- * 
+ *
  * @type {Record<string, number>}
  */
 export const PERSPECTIVE_CAMERA_DEFAULT_VALUES: Record<string, number> = {
@@ -114,10 +115,10 @@ export const PERSPECTIVE_CAMERA_DEFAULT_VALUES: Record<string, number> = {
 
 /**
  * Default parameters for Three.js orthographic camera.
- * 
+ *
  * @type {Record<string, number>}
  */
- export const ORTHOGRAPHIC_CAMERA_DEFAULT_VALUES: Record<string, number> = {
+export const ORTHOGRAPHIC_CAMERA_DEFAULT_VALUES: Record<string, number> = {
   leftDivisor: -2000,
   rightDivisor: 2000,
   topDivisor: 2000,
@@ -138,4 +139,13 @@ export const ORBIT_CONTROLS_DEFAULT_VALUES: Record<string, number | boolean> = {
   enableZoom: true,
   maxDistance: 100,
   minDistance: 0.001,
+};
+
+export const REQUEST_TYPE = {
+  TOP_LISTENED: 'charts',
+  LIKED_SONGS: 'liked',
+  PLAYLISTS: 'playlists',
+  ALBUMS: 'albums',
+  ARTISTS: 'artists',
+  NONE: 'none',
 };

@@ -21,7 +21,7 @@ export default Vue.extend({
   name: 'ProgressDetails',
 
   computed: {
-    ...mapGetters('data', [
+    ...mapGetters('map', [
       'isProcessDone',
       'getCurrentIteration',
       'getIterations',

@@ -53,7 +53,6 @@ interface IData {
 interface IComputed {
   isAuthenticated: boolean;
   getProgress: number;
-  getProgressSample: Track[];
   isDone: boolean;
   progressUpdate: string;
   message: string;
@@ -151,7 +150,6 @@ export default Vue.extend<IData, IMethods, IComputed>({
     ]),
     ...mapGetters('data', [
       'getProgress',
-      'getProgressSample',
       'isDone',
     ]),
     progressUpdate() {

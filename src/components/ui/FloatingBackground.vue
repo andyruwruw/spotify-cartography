@@ -7,9 +7,7 @@ import Vue from 'vue';
 import {
   Camera,
   Mesh,
-  Raycaster,
   Scene,
-  Vector2,
   WebGLRenderer,
 } from 'three';
 import {
@@ -23,26 +21,57 @@ import {
   getContainer,
 } from '@/helpers/three';
 
-const SPAWNING_X_RANDOM_DRIFT = 2.4;
-const SPAWNING_Y_RANDOM_DRIFT = 1.4;
+/**
+ * Dictates how large the spawning zone should be in proportion to canvas size.
+ */
+const PIXEL_TO_CANVAS_RATIO = 0.001;
+
+/**
+ * Amount of distance points can differentiate on the z-axis.
+ */
 const SPAWNING_Z_RANDOM_DRIFT = 10;
+
+/**
+ * Minimum distance away points spawn away from the origin.
+ */
 const SPAWNING_Z_MINIMUM = -10;
+
+/**
+ * Number of points in proportion to canvas size.
+ */
+const POINT_DENSITY = 0.00002;
 
 export default Vue.extend({
   name: 'FloatingBackground',
 
   data: () => ({
+    /**
+     * Three.js camera object.
+     */
     camera: null as Camera | null,
+
+    /**
+     * Three.js scene.
+     */
     scene: null as Scene | null,
+
+    /**
+     * Three.js scene renderer.
+     */
     renderer: null as WebGLRenderer | null,
-    mouse: new Vector2(0, 0),
+
+    /**
+     * Array of point Mesh objects.
+     */
     points: [] as Mesh[],
+
+    /**
+     * Start time, used to calculate point placements.
+     */
     start: 0 as number,
   }),
 
   async mounted() {
-    window.addEventListener('mousemove', this.trackMouse);
-
     this.start = Date.now();
 
     await this.initialize();
@@ -50,11 +79,9 @@ export default Vue.extend({
   },
 
   methods: {
-    trackMouse(e: MouseEvent) {
-      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-    },
-
+    /**
+     * Initializes the Three.js scene.
+     */
     async initialize() {
       const container = (getContainer() as HTMLElement);
 
@@ -73,17 +100,28 @@ export default Vue.extend({
       this.animate();
     },
 
+    /**
+     * Creates a random set of points based on canvas size.
+     */
     generateRandomPoints() {
-      for (let i = 0; i < 100; i += 1) {
+      const spawnWidth = window.innerWidth * PIXEL_TO_CANVAS_RATIO;
+      const spawnheight = window.innerHeight * PIXEL_TO_CANVAS_RATIO;
+
+      const numPoints = Math.round(window.innerWidth * window.innerHeight * POINT_DENSITY);
+
+      for (let i = 0; i < numPoints; i += 1) {
         this.points.push(addPointMeshToScene(
           this.scene as Scene,
-          Math.random() * SPAWNING_X_RANDOM_DRIFT - (SPAWNING_X_RANDOM_DRIFT / 2),
-          Math.random() * SPAWNING_Y_RANDOM_DRIFT - (SPAWNING_Y_RANDOM_DRIFT / 2),
+          Math.random() * spawnWidth - (spawnWidth / 2),
+          Math.random() * spawnheight - (spawnheight / 2),
           Math.random() * SPAWNING_Z_RANDOM_DRIFT - (SPAWNING_Z_RANDOM_DRIFT / 2) + SPAWNING_Z_MINIMUM,
         ));
       }
     },
 
+    /**
+     * Animates the scene.
+     */
     animate() {
       requestAnimationFrame(this.animate);
 
