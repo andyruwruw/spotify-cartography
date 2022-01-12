@@ -1,5 +1,13 @@
 import api from '@/api';
 
+export interface TrackAttatchedData {
+  added?: number;
+  playlistId?: string;
+  albumId?: string;
+  artistId?: string;
+  index?: string;
+}
+
 export interface TrackAudioFeatures {
   acousticness: number;
   danceability: number;
@@ -12,12 +20,8 @@ export interface TrackAudioFeatures {
   popularity: number;
 }
 
-export interface CondensedSavedTrack extends SpotifyApi.TrackObjectFull {
-  added: number;
-}
-
 export interface Track {
-  added: number;
+  attatchedData: TrackAttatchedData;
   id: string;
   name: string;
   artist: string;
@@ -61,12 +65,20 @@ export const getSavedTracks = async (offset: number) => {
  * @param {SpotifyApi.TrackObjectFull[]} tracks Track objects.
  * @returns {Promise<TrackAudioFeatures[]>}
  */
-export const getTracksAudioFeatures = async (tracks: SpotifyApi.TrackObjectFull[]) => {
+export const getTracksAudioFeatures = async (tracks: SpotifyApi.TrackObjectFull[] | SpotifyApi.TrackObjectSimplified[]) => {
   const ids = tracks.map((track) => track.id);
 
-  const response = await api.spotify.tracks.getTracksAudioFeatures(ids);
+  const audioFeatures: SpotifyApi.AudioFeaturesObject[] = [];
 
-  return response.body.audio_features;
+  while (ids.length > 0) {
+    const response = await api.spotify.tracks.getTracksAudioFeatures(ids.splice(0, 50));
+
+    response.body.audio_features.forEach((audioFeature) => {
+      audioFeatures.push(audioFeature);
+    });
+  }
+
+  return audioFeatures;
 };
 
 const canConvertTrack = (

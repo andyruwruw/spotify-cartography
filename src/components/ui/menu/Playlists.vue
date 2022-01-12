@@ -10,34 +10,43 @@
       @keydown="search" />
 
     <div :class="[$style.playlists, {
-      [$style.populated]: playlists.length > 0,
-    }]">
-      <div
-        v-for="playlist in playlists"
+        [$style.populated]: chosen.length > 0,
+      }]"
+      :style="{
+        '--item-num': chosen.length,
+      }">
+      <list-item
+        v-for="(playlist, index) in chosen"
         :key="playlist.id"
-        :class="$style.playlist">
-        <div
-          :class="$style.image"
-          :style="{
-            'background-image': `url(${playlist.images[0].url})`,
-          }" />
+        :index="index"
+        :image="playlist.images[0].url"
+        :name="playlist.name"
+        :description="playlist.owner.display_name"
+        :active="true"
+        @click="deselect" />
+    </div>
 
-        <div :class="$style.details">
-          <span :class="$style.name">
-            {{ playlist.name }}
-          </span>
-
-          <span :class="$style.owner">
-            {{ playlist.owner.display_name }}
-          </span>
-        </div>
-      </div>
+    <div :class="[$style.playlists, {
+        [$style.populated]: playlists.length > 0,
+      }]"
+      :style="{
+        '--item-num': playlists.length > 0 ? 3 : 0,
+      }">
+      <list-item
+        v-for="(playlist, index) in playlists"
+        :key="playlist.id"
+        :index="index"
+        :image="playlist.images[0].url"
+        :name="playlist.name"
+        :description="playlist.owner.display_name"
+        @click="select" />
     </div>
 
     <div :class="$style.actions">
       <menu-navigation
-        :disableMap="false"
-        @back="back" />
+        :disableMap="chosen.length === 0"
+        @back="back"
+        @map="map" />
     </div>
   </div>
 </template>
@@ -51,12 +60,14 @@ import api from '@/api';
 import { REQUEST_TYPE } from '@/config';
 import { BUTTON_COLORS } from './config';
 import MenuNavigation from './MenuNavigation.vue';
+import ListItem from '../list/ListItem.vue';
 
 export default Vue.extend({
   name: 'Playlists',
 
   components: {
     MenuNavigation,
+    ListItem,
   },
 
   data: () => ({
@@ -65,22 +76,50 @@ export default Vue.extend({
     query: '',
 
     playlists: [] as SpotifyApi.PlaylistObjectSimplified[],
+
+    chosen: [] as SpotifyApi.PlaylistObjectSimplified[],
   }),
 
   methods: {
     ...mapActions('data', [
-      'changeSettingsTimeRange',
+      'changeSettingsPlaylists',
     ]),
 
     back() {
-      this.changeSettingsTimeRange('');
+      this.changeSettingsPlaylists([]);
       this.$emit('select', REQUEST_TYPE.NONE);
     },
 
     async search() {
+      if (this.query === '') {
+        return;
+      }
       const response = await api.spotify.playlist.search(this.query);
 
       this.playlists = (response.body.playlists as SpotifyApi.PagingObject<SpotifyApi.PlaylistObjectSimplified>).items;
+    },
+
+    select(index: number) {
+      const playlist = this.playlists[index];
+
+      if (this.chosen.includes(playlist)) {
+        this.chosen = this.chosen.filter((item) => item.id !== playlist.id);
+      } else {
+        this.chosen.push(playlist);
+        this.playlists = this.playlists.filter((item) => item.id !== playlist.id);
+      }
+    },
+
+    deselect(index: number) {
+      const playlist = this.chosen[index];
+
+      if (this.chosen.includes(playlist)) {
+        this.chosen = this.chosen.filter((item) => item.id !== playlist.id);
+      }
+    },
+
+    map() {
+      this.changeSettingsPlaylists(this.chosen);
     },
   },
 });
@@ -92,76 +131,36 @@ export default Vue.extend({
   max-width: calc(100vw - 2rem);
 }
 
-.playlists.populated {
-  height: calc((66px + 16px) * 5);
+.playlists {
+  --item-num: 0;
+
   overflow: auto;
-  border: 1px solid #e0e0e0;
 
-  &::-webkit-scrollbar {
-  width: 5px;
-  }
+  &.populated {
+    height: calc((66px + 16px) * var(--item-num));
+    padding: 0 .5rem 0 0;
 
-  &::-webkit-scrollbar-track {
-    background: #07070725;
-  }
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
 
-  &::-webkit-scrollbar-thumb {
-    background: rgba(248, 248, 248, 0.212);
-  }
+    &::-webkit-scrollbar-track {
+      background: #07070725;
+    }
 
-  &::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.397);
-  }
-}
+    &::-webkit-scrollbar-thumb {
+      background: rgba(248, 248, 248, 0.212);
+    }
 
-.playlist {
-  display: flex;
-  width: 100%;
-  margin: 0 0 1rem;
-  border: 1px solid rgba(255, 255, 255, 0);
-  padding: .5rem;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: border .2s ease;
-
-  &:hover {
-    border: 1px solid rgb(240, 124, 70);
-  }
-}
-
-.image {
-  display: block;
-  width: 3rem;
-  height: 3rem;
-  background-size: auto 100%;
-  background-position: center center;
-  background-color: #222;
-  margin-right: .8rem;
-}
-
-.details {
-  display: flex;
-  flex-direction: column;
-  width: calc(100% - 3rem - .8rem - 1rem);
-
-  .name {
-    color: white;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    min-width: 0;
-    max-width: 100%;
-  }
-
-  .owner {
-    color: rgba(255, 255, 255, 0.52);
-    font-weight: 200;
+    &::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.397);
+    }
   }
 }
 
 .actions {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  flex-direction: column;
 }
 </style>

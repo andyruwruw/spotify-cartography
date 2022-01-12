@@ -32,10 +32,13 @@ export const waitForSpotifyWebPlaybackSDKToLoad = async () => new Promise((resol
  */
 export const waitUntilUserHasSelectedPlayer = async (sdk: any) => new Promise((resolve) => {
   const interval = setInterval(async () => {
-    const state = await sdk.getCurrentState();
-    if (state !== null) {
-      resolve(state);
-      clearInterval(interval);
+    if (sdk && 'getCurrentState' in sdk) {
+      const state = await sdk.getCurrentState();
+
+      if (state !== null) {
+        resolve(state);
+        clearInterval(interval);
+      }
     }
   });
 });

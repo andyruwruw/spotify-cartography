@@ -20,7 +20,8 @@
       :disabled="disableMap"
       width="234"
       dark
-      text>
+      text
+      @click="map">
       <v-icon style="margin-right: .5rem">
         mdi-map-legend
       </v-icon>
@@ -51,6 +52,10 @@ export default Vue.extend({
   methods: {
     back() {
       this.$emit('back');
+    },
+
+    map() {
+      this.$emit('map');
     },
   },
 });
