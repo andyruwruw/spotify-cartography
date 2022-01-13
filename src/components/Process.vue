@@ -164,6 +164,9 @@ export default Vue.extend({
     ...mapActions('map', [
       'processData',
       'abort',
+    ]),
+
+    ...mapActions('data', [
       'save',
     ]),
 

@@ -19,7 +19,7 @@
         v-for="(playlist, index) in chosen"
         :key="playlist.id"
         :index="index"
-        :image="playlist.images[0].url"
+        :image="'images' in playlist && playlist.images.length ? playlist.images[0].url : ''"
         :name="playlist.name"
         :description="playlist.owner.display_name"
         :active="true"
@@ -36,7 +36,7 @@
         v-for="(playlist, index) in playlists"
         :key="playlist.id"
         :index="index"
-        :image="playlist.images[0].url"
+        :image="'images' in playlist && playlist.images.length ? playlist.images[0].url : ''"
         :name="playlist.name"
         :description="playlist.owner.display_name"
         @click="select" />
@@ -83,6 +83,7 @@ export default Vue.extend({
   methods: {
     ...mapActions('data', [
       'changeSettingsPlaylists',
+      'collectData',
     ]),
 
     back() {
@@ -120,6 +121,9 @@ export default Vue.extend({
 
     map() {
       this.changeSettingsPlaylists(this.chosen);
+
+      this.collectData();
+      this.$router.push('/exploring');
     },
   },
 });

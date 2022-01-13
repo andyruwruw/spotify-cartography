@@ -66,7 +66,7 @@ export const getSavedTracks = async (offset: number) => {
  * @param {SpotifyApi.TrackObjectFull[]} tracks Track objects.
  * @returns {Promise<TrackAudioFeatures[]>}
  */
-export const getTracksAudioFeatures = async (tracks: SpotifyApi.TrackObjectFull[] | SpotifyApi.TrackObjectSimplified[]) => {
+export const getTracksAudioFeatures = async (tracks: SpotifyApi.TrackObjectSimplified[]) => {
   const ids = tracks.map((track) => track.id);
 
   const audioFeatures: SpotifyApi.AudioFeaturesObject[] = [];

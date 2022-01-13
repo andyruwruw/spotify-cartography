@@ -3,7 +3,8 @@
     <div
       :class="$style.container"
       id="container"
-      @click.ctrl="handleClick" />
+      @click.ctrl="handleClick"
+      @click.shift="handleClick" />
 
     <span :class="$style['frame-rate']">
       {{ framesPerSeconds }} FPS
@@ -124,11 +125,11 @@ export default Vue.extend<IData, IMethods, IComputed>({
   },
 
   async mounted() {
-    if (!this.isAuthenticated && this.getTracks.length === 0) {
+    if (!this.isAuthenticated && Object.keys(this.getTracks).length === 0) {
       this.$router.push('/');
     }
-    if (this.getTracks.length === 0) {
-      this.$router.push('/explore');
+    if (Object.keys(this.getTracks).length === 0) {
+      this.$router.push('/exploring');
     }
 
     if (this.isAuthenticated) {

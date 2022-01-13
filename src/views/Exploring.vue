@@ -1,7 +1,7 @@
 <template>
   <div :class="$style.component">
     <div :class="$style.content">
-      <h1 v-if="showTitle">
+      <h1>
         {{ message }}
       </h1>
 

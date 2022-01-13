@@ -19,7 +19,7 @@
         v-for="(album, index) in chosen"
         :key="album.id"
         :index="index"
-        :image="album.images[0].url"
+        :image="'images' in album && album.images.length ? album.images[0].url : ''"
         :name="album.name"
         :description="album.artists.map(artist => artist.name).join(', ')"
         :active="true"
@@ -36,7 +36,7 @@
         v-for="(album, index) in albums"
         :key="album.id"
         :index="index"
-        :image="album.images[0].url"
+        :image="'images' in album && album.images.length ? album.images[0].url : ''"
         :name="album.name"
         :description="album.artists.map(artist => artist.name).join(', ')"
         @click="select" />
@@ -83,6 +83,7 @@ export default Vue.extend({
   methods: {
     ...mapActions('data', [
       'changeSettingsAlbums',
+      'collectData',
     ]),
 
     back() {
@@ -120,6 +121,9 @@ export default Vue.extend({
 
     map() {
       this.changeSettingsAlbums(this.chosen);
+
+      this.collectData();
+      this.$router.push('/exploring');
     },
   },
 });

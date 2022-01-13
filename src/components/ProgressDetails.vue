@@ -45,6 +45,6 @@ export default Vue.extend({
   top: 64px;
   left: 0px;
   padding: 1rem;
-  width: 120px;
+  width: 125px;
 }
 </style>

@@ -7,7 +7,10 @@ import { spotifyApi } from './request';
  * @returns {number}
  */
 const getNumberArtistAlbums = async (id: string) => {
-  const response = await spotifyApi.getArtistAlbums(id, { limit: 1 });
+  const response = await spotifyApi.getArtistAlbums(id, {
+    limit: 1,
+    include_groups: 'album,single',
+  });
 
   if (response.statusCode === 200) {
     return response.body.total;
@@ -25,6 +28,7 @@ const getNumberArtistAlbums = async (id: string) => {
 const getArtistAlbums = (id: string, offset: number) => spotifyApi.getArtistAlbums(id, {
   limit: 50,
   offset,
+  include_groups: 'album,single',
 });
 
 /**

@@ -227,7 +227,7 @@ const actions: ActionTree<DataModuleState, any> = {
           tracks[i + j - start] = track;
         }
 
-        commit('setProgress', i + j - start / (end - start));
+        commit('setProgress', (i + j - start) / (end - start));
       }
     }
 
@@ -267,7 +267,7 @@ const actions: ActionTree<DataModuleState, any> = {
             added: new Date(track.added_at).getTime(),
             index: j + index,
             playlistId: playlist.id,
-            calculatedValue: i / playlists.length,
+            calculatedValue: playlists.length > 1 ? i / playlists.length : (j + index) / total,
           }));
           const audioFeatures = await getTracksAudioFeatures(rawTracks);
 
@@ -284,6 +284,8 @@ const actions: ActionTree<DataModuleState, any> = {
 
             commit('setProgress', (i / playlists.length) + ((j + k) / total) / playlists.length);
           }
+        } else if (response.statusCode === 429) {
+          j -= 50;
         }
       }
     }
@@ -327,7 +329,7 @@ const actions: ActionTree<DataModuleState, any> = {
               added: new Date(album.release_date).getTime(),
               index: j + index,
               albumId: album.id,
-              calculatedValue: i / album.length,
+              calculatedValue: albums.length > 1 ? i / albums.length : (j + index) / totalTracks,
             }));
             const audioFeatures = await getTracksAudioFeatures(rawTracks);
 
@@ -344,7 +346,11 @@ const actions: ActionTree<DataModuleState, any> = {
 
               commit('setProgress', i / albums.length + ((j + k) / totalTracks) / albums.length);
             }
+          } else if (trackResponse.statusCode === 429) {
+            j -= 50;
           }
+        } else if (simplifiedTrackResponse.statusCode === 429) {
+          j -= 50;
         }
       }
     }
@@ -399,12 +405,22 @@ const actions: ActionTree<DataModuleState, any> = {
 
                 if (trackResponse.statusCode === 200) {
                   const rawTracks = trackResponse.body.tracks;
-                  const attatchedData = trackResponse.body.tracks.map((track, index) => ({
-                    added: new Date(album.release_date).getTime(),
-                    index: l + index,
-                    artist: artist.id,
-                    calculatedValue: i / artists.length,
-                  }));
+                  const attatchedData = trackResponse.body.tracks.map((track, index) => {
+                    let calculatedValue = (l + index) / totalTracks;
+                    if (rawAlbums.length > 1 || j > 0) {
+                      calculatedValue = k / rawAlbums.length;
+                    }
+                    if (artists.length > 1) {
+                      calculatedValue = i / artists.length;
+                    }
+
+                    return {
+                      added: new Date(album.release_date).getTime(),
+                      index: l + index,
+                      artist: artist.id,
+                      calculatedValue,
+                    };
+                  });
                   const audioFeatures = await getTracksAudioFeatures(rawTracks);
 
                   for (let m = 0; m < rawTracks.length; m += 1) {
@@ -420,10 +436,16 @@ const actions: ActionTree<DataModuleState, any> = {
 
                     commit('setProgress', (i / artists.length) + (j + k) / totalAlbums / artists.length + ((l + m) / totalTracks) / totalAlbums / artists.length);
                   }
+                } else if (trackResponse.statusCode === 429) {
+                  l -= 50;
                 }
+              } else if (simplifiedTrackResponse.statusCode === 429) {
+                l -= 50;
               }
             }
           }
+        } else if (albumResponse.statusCode === 429) {
+          j -= 50;
         }
       }
     }

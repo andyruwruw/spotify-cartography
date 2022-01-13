@@ -21,7 +21,8 @@
 
     <menu-navigation
       :disableMap="getTimeRange === ''"
-      @back="back"/>
+      @back="back"
+      @map="map" />
   </div>
 </template>
 
@@ -78,6 +79,7 @@ export default Vue.extend({
   methods: {
     ...mapActions('data', [
       'changeSettingsTimeRange',
+      'collectData',
     ]),
 
     selectOption(key: string) {
@@ -91,6 +93,11 @@ export default Vue.extend({
     back() {
       this.changeSettingsTimeRange('');
       this.$emit('select', REQUEST_TYPE.NONE);
+    },
+
+    map() {
+      this.collectData();
+      this.$router.push('/exploring');
     },
   },
 });

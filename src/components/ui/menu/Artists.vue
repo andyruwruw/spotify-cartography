@@ -19,7 +19,7 @@
         v-for="(artist, index) in chosen"
         :key="artist.id"
         :index="index"
-        :image="artist.images[0].url"
+        :image="'images' in artist && artist.images.length ? artist.images[0].url : ''"
         :name="artist.name"
         :description="`${artist.followers.total.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} followers`"
         :active="true"
@@ -36,7 +36,7 @@
         v-for="(artist, index) in artists"
         :key="artist.id"
         :index="index"
-        :image="artist.images[0].url"
+        :image="'images' in artist && artist.images.length ? artist.images[0].url : ''"
         :name="artist.name"
         :description="`${artist.followers.total.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} followers`"
         @click="select" />
@@ -83,6 +83,7 @@ export default Vue.extend({
   methods: {
     ...mapActions('data', [
       'changeSettingsArtists',
+      'collectData',
     ]),
 
     back() {
@@ -120,6 +121,9 @@ export default Vue.extend({
 
     map() {
       this.changeSettingsArtists(this.chosen);
+
+      this.collectData();
+      this.$router.push('/exploring');
     },
   },
 });

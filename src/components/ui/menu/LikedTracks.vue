@@ -53,7 +53,8 @@
 
     <menu-navigation
       :disable-map="!ready"
-      @back="back" />
+      @back="back"
+      @map="map" />
   </div>
 </template>
 
@@ -62,12 +63,14 @@ import Vue from 'vue';
 import { mapActions, mapGetters } from 'vuex';
 
 import { REQUEST_TYPE } from '@/config';
+import api from '@/api';
 import { BUTTON_COLORS } from './config';
 import MenuNavigation from './MenuNavigation.vue';
 
 interface IData {
   buttonColors: Record<string, string>;
   requestTypes: Record<string, string>;
+  total: number;
   limit: string;
   customLimit: string;
   limitOptions: string[];
@@ -77,12 +80,14 @@ interface IData {
 }
 
 interface IMethods {
-  changeSettingsTimeRange: (timeRange: string) => void;
+  changeSettingsLimit: (limit: number) => void;
+  changeSettingsOffset: (offset: number) => void;
+  collectData: () => void;
   back: () => void;
+  map: () => void;
 }
 
 interface IComputed {
-  getTotal: number;
   ready: boolean;
   selectedNum: string;
 }
@@ -97,6 +102,8 @@ export default Vue.extend<IData, IMethods, IComputed>({
   data: () => ({
     buttonColors: BUTTON_COLORS,
     requestTypes: REQUEST_TYPE,
+
+    total: -1,
 
     limit: 'All Liked Songs',
     customLimit: '',
@@ -116,24 +123,23 @@ export default Vue.extend<IData, IMethods, IComputed>({
   }),
 
   computed: {
-    ...mapGetters('data', [
-      'getTotal',
-    ]),
-
     ready() {
       return (this.limit === 'All Liked Songs' || (this.limit === 'Custom Amount' && parseInt(this.customLimit, 10) > 0))
       && (this.offset === 'Last Added' || (this.offset === 'Custom Place' && parseInt(this.customOffset, 10) > 0));
     },
 
     selectedNum(): string {
+      if (this.total === -1) {
+        return 'Calculating selected total';
+      }
       if (this.limit === 'All Liked Songs') {
-        return `Selected all ${this.getTotal.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} songs`;
+        return `Selected all ${this.total.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} songs`;
       }
       if (this.offset === 'Last Added') {
-        if (this.customLimit !== '' && parseInt(this.customLimit, 10) > this.getTotal) {
-          return `Selected all ${this.getTotal.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} songs`;
+        if (this.customLimit !== '' && parseInt(this.customLimit, 10) > this.total) {
+          return `Selected all ${this.total.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} songs`;
         }
-        return `Selected most recent ${this.customLimit.replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} songs out of ${this.getTotal.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')}`;
+        return `Selected most recent ${this.customLimit.replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} songs out of ${this.total.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')}`;
       }
       if (this.customLimit === '' || this.customOffset === '') {
         return 'Invalid selection';
@@ -141,25 +147,35 @@ export default Vue.extend<IData, IMethods, IComputed>({
       if (parseInt(this.customOffset, 10) < 0 || parseInt(this.customLimit, 10) < 0) {
         return 'Invalid selection';
       }
-      if (parseInt(this.customOffset, 10) + parseInt(this.customLimit, 10) > this.getTotal) {
-        return `Selected more songs than exist, oldest ${(this.getTotal - parseInt(this.customOffset, 10)).toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} songs out of ${this.getTotal.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} selected`;
+      if (parseInt(this.customOffset, 10) + parseInt(this.customLimit, 10) > this.total) {
+        return `Selected more songs than exist, oldest ${(this.total - parseInt(this.customOffset, 10)).toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} songs out of ${this.total.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} selected`;
       }
-      return `Selected ${this.customLimit.replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} songs starting at ${this.customOffset.replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} out of ${this.getTotal.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')}`;
+      return `Selected ${this.customLimit.replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} songs starting at ${this.customOffset.replace(/(\d)(?=(\d\d\d)+$)/, '$1,')} out of ${this.total.toString().replace(/(\d)(?=(\d\d\d)+$)/, '$1,')}`;
     },
   },
 
-  created() {
-    this.customLimit = `${this.getTotal}`;
+  async created() {
+    this.total = await api.spotify.library.getNumberSavedTracks();
+    this.customLimit = `${this.total}`;
   },
 
   methods: {
     ...mapActions('data', [
-      'changeSettingsTimeRange',
+      'changeSettingsLimit',
+      'changeSettingsOffset',
+      'collectData',
     ]),
 
     back() {
-      this.changeSettingsTimeRange('');
+      this.changeSettingsLimit(-1);
+      this.changeSettingsOffset(-1);
       this.$emit('select', REQUEST_TYPE.NONE);
+    },
+
+    map() {
+      this.changeSettingsLimit(this.limit === 'All Liked Songs' ? -1 : parseInt(this.customLimit, 10));
+      this.changeSettingsOffset(this.offset === 'Last Added' ? -1 : parseInt(this.customOffset, 10));
+      this.$router.push('/exploring');
     },
   },
 });
