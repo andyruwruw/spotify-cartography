@@ -7,8 +7,28 @@ import { spotifyApi } from './request';
  * @param {number} offset Where in the playlist to start getting tracks.
  * @returns {Promise<Response<SpotifyApi.PlaylistTrackResponse>>}
  */
-const getPlaylistTracks = (id: string, offset: number) => spotifyApi.getPlaylistTracks(id, {
-  limit: 50,
+const getNumberPlaylistTracks = async (id: string) => {
+  const response = await spotifyApi.getPlaylistTracks(id, { limit: 1 });
+
+  if (response.statusCode === 200) {
+    return response.body.total;
+  }
+  return 0;
+};
+
+/**
+ * Retrieves playlist tracks.
+ *
+ * @param {string} id Playlist ID.
+ * @param {number} offset Where in the playlist to start getting tracks.
+ * @returns {Promise<Response<SpotifyApi.PlaylistTrackResponse>>}
+ */
+const getPlaylistTracks = (
+  id: string,
+  offset: number,
+  limit = 50,
+) => spotifyApi.getPlaylistTracks(id, {
+  limit,
   offset,
 });
 
@@ -27,6 +47,7 @@ const search = (query: string) => spotifyApi.search(
 );
 
 export default {
+  getNumberPlaylistTracks,
   getPlaylistTracks,
   search,
 };

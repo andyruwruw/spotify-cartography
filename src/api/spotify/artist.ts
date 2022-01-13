@@ -1,6 +1,21 @@
 import { spotifyApi } from './request';
 
 /**
+ * Retrieves number of artist albums.
+ *
+ * @param {string} id Artist ID.
+ * @returns {number}
+ */
+const getNumberArtistAlbums = async (id: string) => {
+  const response = await spotifyApi.getArtistAlbums(id, { limit: 1 });
+
+  if (response.statusCode === 200) {
+    return response.body.total;
+  }
+  return 0;
+};
+
+/**
  * Retrieves artist albums.
  *
  * @param {string} id Artist ID.
@@ -27,6 +42,7 @@ const search = (query: string) => spotifyApi.search(
 );
 
 export default {
+  getNumberArtistAlbums,
   getArtistAlbums,
   search,
 };

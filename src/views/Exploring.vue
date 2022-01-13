@@ -38,7 +38,7 @@ interface IComputed {
   message: string;
 }
 
-export default Vue.extend<IData, {}, IComputed>({
+export default Vue.extend<IData, Record<string, unknown>, IComputed>({
   name: 'Exploring',
 
   components: {

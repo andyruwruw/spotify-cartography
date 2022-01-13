@@ -5,7 +5,8 @@ export interface TrackAttatchedData {
   playlistId?: string;
   albumId?: string;
   artistId?: string;
-  index?: string;
+  index?: number;
+  calculatedValue: number;
 }
 
 export interface TrackAudioFeatures {
@@ -80,9 +81,15 @@ export const getTracksAudioFeatures = async (tracks: SpotifyApi.TrackObjectFull[
 
   return audioFeatures;
 };
-
-const canConvertTrack = (
-  track: CondensedSavedTrack,
+/**
+ * Whether enough data is present to deposit.
+ *
+ * @param {SpotifyApi.TrackObjectFull} track
+ * @param {SpotifyApi.AudioFeaturesObject} audioFeatures
+ * @returns {boolean} Whether enough data is present to deposit.
+ */
+const isCombinable = (
+  track: SpotifyApi.TrackObjectFull,
   audioFeatures: SpotifyApi.AudioFeaturesObject,
 ): boolean => (audioFeatures
   && Number.isNaN(audioFeatures.acousticness) === false
@@ -99,64 +106,37 @@ const canConvertTrack = (
   && track.album.images[0].url !== null);
 
 /**
- * Converts tracks to a format that can be used for clustering.
+ * Combines track data to be deposited.
  *
- * @param {Record<string, Track>} tracks Track objects converted to be added to.
- * @param {CondensedSavedTrack[]} savedTracks Track objects to be converted.
- * @param {SpotifyApi.AudioFeaturesObject[]} audioFeatures Track audio feature data to be converted.
- * @param {number} index Offset of track's to be added
- * @param {number} last Last track added date so far.
- * @param {number} first First track added date so far.
- * @returns {Promise<Record<string, number>>}
+ * @param {SpotifyApi.TrackObjectFull} track Track full object.
+ * @param {TrackAttatchedData} attatchedData Attatched data to track.
+ * @param {SpotifyApi.AudioFeaturesObject} audioFeatures Track audio features.
+ * @returns {Track} Combined data to be deposited.
  */
-export const convertTracks = async (
-  tracks: Record<string, Track>,
-  savedTracks: CondensedSavedTrack[],
-  audioFeatures: SpotifyApi.AudioFeaturesObject[],
-  index: number,
-  last: number,
-  first: number,
-): Promise<Record<string, number>> => {
-  const sample: Track[] = [];
-
-  let newLast = last;
-  let newFirst = first;
-
-  for (let i = 0; i < savedTracks.length; i += 1) {
-    if (canConvertTrack(savedTracks[i], audioFeatures[i])) {
-      if (savedTracks[i].added > newLast) {
-        newLast = savedTracks[i].added;
-      }
-      if (savedTracks[i].added < newFirst) {
-        newFirst = savedTracks[i].added;
-      }
-      tracks[index + i] = {
-        added: savedTracks[i].added,
-        id: savedTracks[i].id,
-        name: savedTracks[i].name,
-        artist: savedTracks[i].artists.map((artist) => artist.name).join(', '),
-        image: savedTracks[i].album.images[0].url,
-        audioFeatures: {
-          acousticness: audioFeatures[i].acousticness,
-          danceability: audioFeatures[i].danceability,
-          energy: audioFeatures[i].energy,
-          instrumentalness: audioFeatures[i].instrumentalness,
-          liveness: audioFeatures[i].liveness,
-          speechiness: audioFeatures[i].speechiness,
-          tempo: audioFeatures[i].tempo,
-          valence: audioFeatures[i].valence,
-          popularity: savedTracks[i].popularity,
-        },
-      };
-
-      if (sample.length < 3) {
-        sample.push(tracks[savedTracks[i].id]);
-      }
-    }
+export const combineTrackElements = (
+  track: SpotifyApi.TrackObjectFull,
+  attatchedData: TrackAttatchedData,
+  audioFeatures: SpotifyApi.AudioFeaturesObject,
+): Track | null => {
+  if (isCombinable(track, audioFeatures)) {
+    return {
+      attatchedData,
+      id: track.id,
+      name: track.name,
+      artist: track.artists.map((artist) => artist.name).join(', '),
+      image: track.album.images[0].url,
+      audioFeatures: {
+        acousticness: audioFeatures.acousticness,
+        danceability: audioFeatures.danceability,
+        energy: audioFeatures.energy,
+        instrumentalness: audioFeatures.instrumentalness,
+        liveness: audioFeatures.liveness,
+        speechiness: audioFeatures.speechiness,
+        tempo: audioFeatures.tempo,
+        valence: audioFeatures.valence,
+        popularity: track.popularity,
+      },
+    };
   }
-
-  return {
-    newLast,
-    newFirst,
-  };
+  return null;
 };

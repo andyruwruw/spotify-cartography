@@ -195,10 +195,8 @@ export default Vue.extend<IData, IMethods, IComputed>({
       // Add new points.
       for (let i = 0; i < this.getGraph.length; i += 1) {
         if (this.getTracks[i] !== undefined) {
-          let color = getColor(1.0);
-          if ('added' in this.getTracks[i]) {
-            color = getColor((this.getTracks[i].added - first) / (last - first));
-          }
+          const color = getColor(this.getTracks[i].attatchedData.calculatedValue);
+
           this.points.push(addPointMeshToScene(
             this.scene as Scene,
             (this.getGraph[i][0] / largestValue) * multiplier,

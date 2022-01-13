@@ -7,9 +7,7 @@ import {
 import moment from 'moment';
 
 import {
-  convertTracks,
-  getNumberSavedTracks,
-  getSavedTracks,
+  combineTrackElements,
   getTracksAudioFeatures,
   Track,
 } from '@/helpers/spotify-processing';
@@ -30,7 +28,6 @@ interface TrackData {
 
 export interface DataModuleState {
   progress: number;
-  total: number;
   type: string;
   timeRange: string;
   limit: number;
@@ -46,7 +43,6 @@ export interface DataModuleState {
 
 const defaultState = (): DataModuleState => ({
   progress: 0,
-  total: -1,
   type: '',
 
   timeRange: '',
@@ -68,7 +64,6 @@ const defaultState = (): DataModuleState => ({
 
 const getters: GetterTree<DataModuleState, any> = {
   getProgress: (state): number => state.progress,
-  getTotal: (state): number => state.total,
   getType: (state): string => state.type,
   getTimeRange: (state): string => state.timeRange,
   getLimit: (state): number => state.limit,
@@ -90,9 +85,6 @@ const getters: GetterTree<DataModuleState, any> = {
 const mutations: MutationTree<DataModuleState> = {
   setProgress(state, progress: number) {
     state.progress = progress;
-  },
-  setTotal(state, total: number) {
-    state.total = total;
   },
   setType(state, type: string) {
     state.type = type;
@@ -128,11 +120,16 @@ const mutations: MutationTree<DataModuleState> = {
 };
 
 const actions: ActionTree<DataModuleState, any> = {
-  async getTotal({ commit }) {
-    commit('setTotal', await getNumberSavedTracks());
-  },
-
-  async collectData({ commit, rootGetters, dispatch }) {
+  /**
+   * Collects data based on parameters.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   */
+  async collectData({
+    commit,
+    rootGetters,
+    dispatch,
+  }) {
     commit('setDone', false);
 
     if (rootGetters['data/getType'] === REQUEST_TYPE.TOP_LISTENED) {
@@ -148,132 +145,299 @@ const actions: ActionTree<DataModuleState, any> = {
     }
   },
 
-  async collectTopListened({ commit, rootGetters, dispatch }) {
+  /**
+   * Collects top listened tracks from Spotify API.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   */
+  async collectTopListened({ commit, rootGetters }) {
     if (rootGetters['data/getTimeRange'] === '') {
       return;
     }
 
+    const tracks: Record<number, Track> = {};
+
     const response = await api.spotify.user.getTopListened(rootGetters['data/getTimeRange']);
 
     if (response.statusCode === 200) {
-      const tracks = response.body.items;
-      const attatchedData = tracks.map((track, index) => { index });
-      const audioFeatures = await getTracksAudioFeatures(tracks);
+      const rawTracks = response.body.items;
+      const attatchedData = rawTracks.map((track, index) => ({
+        index,
+        calculatedValue: index / rawTracks.length,
+      }));
+      const audioFeatures = await getTracksAudioFeatures(rawTracks);
 
+      for (let i = 0; i < rawTracks.length; i += 1) {
+        const track = combineTrackElements(
+          rawTracks[i],
+          attatchedData[i],
+          audioFeatures[i],
+        );
+
+        if (track) {
+          tracks[i] = track;
+        }
+
+        commit('setProgress', i / rawTracks.length);
+      }
+
+      commit('setProgress', 1);
       commit('setTracks', tracks);
       commit('setDone', true);
     } else {
+      commit('setProgress', 1);
       commit('setDone', true);
     }
   },
 
-  async collectLikedTracks({
-    commit,
-    dispatch,
-    rootGetters,
-  }) {
-    if (rootGetters['data/getTotal'] === -1) {
-      dispatch('getTotal');
+  /**
+   * Collects liked tracks from Spotify API.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   */
+  async collectLikedTracks({ commit, rootGetters }) {
+    const total = await api.spotify.library.getNumberSavedTracks();
+
+    const tracks: Record<number, Track> = {};
+
+    const start = rootGetters['data/getOffset'] === -1 ? 0 : rootGetters['data/getOffset'];
+    const end = rootGetters['data/getLimit'] === -1 ? total : start + rootGetters['data/getLimit'];
+
+    const firstAdded = new Date((await api.spotify.library.getSavedTracks(start, 1)).body.items[0].added_at).getTime();
+    const lastAdded = new Date((await api.spotify.library.getSavedTracks(end, 1)).body.items[0].added_at).getTime();
+
+    for (let i = start; i < end; i += 50) {
+      const response = await api.spotify.library.getSavedTracks(i, i + 50 <= end ? 50 : end - i);
+
+      const rawTracks = response.body.items.map((track) => track.track);
+      const attatchedData = response.body.items.map((track, index) => ({
+        added: (new Date(track.added_at)).getTime(),
+        calculatedValue: ((new Date(track.added_at)).getTime() - firstAdded) / (lastAdded - firstAdded),
+      }));
+      const audioFeatures = await getTracksAudioFeatures(rawTracks);
+
+      for (let j = 0; j < rawTracks.length; j += 1) {
+        const track = combineTrackElements(
+          rawTracks[j],
+          attatchedData[j],
+          audioFeatures[j],
+        );
+
+        if (track) {
+          tracks[i + j - start] = track;
+        }
+
+        commit('setProgress', i + j - start / (end - start));
+      }
     }
 
-    const total = rootGetters['data/getTotal'];
-
-    const tracks = {};
-
-    // && i < 500
-    let last = 0;
-    let first = Date.now();
-
-    // && i < 1000 For when things get scary...
-
-    for (let i = 0; i < total; i += 50) {
-      const savedTracks = await getSavedTracks(i);
-
-      const audioFeatures = await getTracksAudioFeatures(savedTracks);
-
-      const {
-        newLast,
-        newFirst,
-      } = await convertTracks(
-        tracks,
-        savedTracks,
-        audioFeatures,
-        i,
-        last,
-        first,
-      );
-
-      last = newLast;
-      first = newFirst;
-
-      commit('setFirstAndLast', { first, last });
-      commit('setProgress', i + 50 >= total ? 1 : (i / total));
-    }
-
+    commit('setProgress', 1);
     commit('setDone', true);
     commit('setTracks', tracks);
   },
 
-  async collectPlaylists({ commit, rootGetters, dispatch }) {
+  /**
+   * Collects playlist tracks from Spotify API.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   */
+  async collectPlaylists({ commit, rootGetters }) {
     if (rootGetters['data/getPlaylists'].length === 0) {
       return;
     }
 
+    const tracks: Record<number, Track> = {};
+
     const playlists = rootGetters['data/getPlaylists'];
 
     for (let i = 0; i < playlists.length; i += 1) {
-      let totalTracks = -1;
       const playlist = playlists[i];
 
-      let tracks;
-      let start = 0;
+      const total = await api.spotify.playlist.getNumberPlaylistTracks(playlist.id);
 
-      do {
-        const response = await api.spotify.playlist.getPlaylistTracks(playlist.id, start);
+      for (let j = 0; j < total; j += 50) {
+        const response = await api.spotify.playlist.getPlaylistTracks(
+          playlist.id,
+          j,
+        );
 
         if (response.statusCode === 200) {
-          if (totalTracks === -1) {
-            totalTracks = response.body.total;
+          const rawTracks = response.body.items.map((track) => track.track);
+          const attatchedData = response.body.items.map((track, index) => ({
+            added: new Date(track.added_at).getTime(),
+            index: j + index,
+            playlistId: playlist.id,
+            calculatedValue: i / playlists.length,
+          }));
+          const audioFeatures = await getTracksAudioFeatures(rawTracks);
+
+          for (let k = 0; k < rawTracks.length; k += 1) {
+            const track = combineTrackElements(
+              rawTracks[k],
+              attatchedData[k],
+              audioFeatures[k],
+            );
+
+            if (track) {
+              tracks[Object.keys(tracks).length] = track;
+            }
+
+            commit('setProgress', (i / playlists.length) + ((j + k) / total) / playlists.length);
           }
-
-          tracks = response.body.items;
-
-          const audioFeatures = await getTracksAudioFeatures(tracks);
-
-          const {
-            newLast,
-            newFirst,
-          } = await convertTracks(
-            tracks,
-            tracks,
-            audioFeatures,
-            i,
-            0,
-            0,
-          );
-
-          commit('setProgress', i + 1 >= playlists.length ? 1 : (i / playlists.length));
-          start += 50;
-        } else {
-          commit('setDone', true);
-          return;
         }
-      } while (tracks.length === 50);
-
-      commit('setProgress', i + 1 >= playlists.length ? 1 : (i / playlists.length));
+      }
     }
+
+    commit('setProgress', 1);
+    commit('setDone', true);
+    commit('setTracks', tracks);
   },
 
-  async collectAlbums({ commit, rootGetters, dispatch }) {
+  /**
+   * Collects album tracks from Spotify API.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   */
+  async collectAlbums({ commit, rootGetters }) {
+    if (rootGetters['data/getAlbums'].length === 0) {
+      return;
+    }
+
+    const tracks: Record<number, Track> = {};
+
+    const albums = rootGetters['data/getAlbums'];
+
+    for (let i = 0; i < albums.length; i += 1) {
+      const album = albums[i];
+
+      const totalTracks = await api.spotify.album.getNumberAlbumTracks(album.id);
+
+      for (let j = 0; j < totalTracks; j += 50) {
+        const simplifiedTrackResponse = await api.spotify.album.getAlbumTracks(
+          album.id,
+          j,
+        );
+
+        if (simplifiedTrackResponse.statusCode === 200) {
+          const trackResponse = await api.spotify.tracks.getTracks(simplifiedTrackResponse.body.items.map((track) => track.id));
+
+          if (trackResponse.statusCode === 200) {
+            const rawTracks = trackResponse.body.tracks;
+            const attatchedData = trackResponse.body.tracks.map((track, index) => ({
+              added: new Date(album.release_date).getTime(),
+              index: j + index,
+              albumId: album.id,
+              calculatedValue: i / album.length,
+            }));
+            const audioFeatures = await getTracksAudioFeatures(rawTracks);
+
+            for (let k = 0; k < rawTracks.length; k += 1) {
+              const track = combineTrackElements(
+                rawTracks[k],
+                attatchedData[k],
+                audioFeatures[k],
+              );
+
+              if (track) {
+                tracks[Object.keys(tracks).length] = track;
+              }
+
+              commit('setProgress', i / albums.length + ((j + k) / totalTracks) / albums.length);
+            }
+          }
+        }
+      }
+    }
+
+    commit('setProgress', 1);
+    commit('setDone', true);
+    commit('setTracks', tracks);
   },
 
-  async collectArtists({ commit, rootGetters, dispatch }) {
+  /**
+   * Collects artist tracks from Spotify API.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @returns {void}
+   */
+  async collectArtists({ commit, rootGetters }) {
+    if (rootGetters['data/getArtists'].length === 0) {
+      return;
+    }
+
+    const tracks: Record<number, Track> = {};
+
+    const artists = rootGetters['data/getArtists'];
+
+    for (let i = 0; i < artists.length; i += 1) {
+      const artist = artists[i];
+
+      const totalAlbums = await api.spotify.artist.getNumberArtistAlbums(artist.id);
+
+      for (let j = 0; j < totalAlbums; j += 50) {
+        const albumResponse = await api.spotify.artist.getArtistAlbums(
+          artist.id,
+          j,
+        );
+
+        if (albumResponse.statusCode === 200) {
+          const rawAlbums = albumResponse.body.items;
+
+          for (let k = 0; k < rawAlbums.length; k += 1) {
+            const album = rawAlbums[k];
+
+            const totalTracks = await api.spotify.album.getNumberAlbumTracks(album.id);
+
+            for (let l = 0; l < totalTracks; l += 50) {
+              const simplifiedTrackResponse = await api.spotify.album.getAlbumTracks(
+                album.id,
+                l,
+              );
+
+              if (simplifiedTrackResponse.statusCode === 200) {
+                const trackResponse = await api.spotify.tracks.getTracks(simplifiedTrackResponse.body.items.map((track) => track.id));
+
+                if (trackResponse.statusCode === 200) {
+                  const rawTracks = trackResponse.body.tracks;
+                  const attatchedData = trackResponse.body.tracks.map((track, index) => ({
+                    added: new Date(album.release_date).getTime(),
+                    index: l + index,
+                    artist: artist.id,
+                    calculatedValue: i / artists.length,
+                  }));
+                  const audioFeatures = await getTracksAudioFeatures(rawTracks);
+
+                  for (let m = 0; m < rawTracks.length; m += 1) {
+                    const track = combineTrackElements(
+                      rawTracks[m],
+                      attatchedData[m],
+                      audioFeatures[m],
+                    );
+
+                    if (track) {
+                      tracks[Object.keys(tracks).length] = track;
+                    }
+
+                    commit('setProgress', (i / artists.length) + (j + k) / totalAlbums / artists.length + ((l + m) / totalTracks) / totalAlbums / artists.length);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    commit('setProgress', 1);
+    commit('setDone', true);
+    commit('setTracks', tracks);
   },
 
-  async processTracks({ commit, rootGetters, dispatch }, retrievedTracks) {
-    const audioFeatures = await getTracksAudioFeatures(retrievedTracks);
-  },
-
+  /**
+   * Saves the user's data as a JSON.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   */
   async save({ rootGetters }) {
     const graph = rootGetters['map/getGraph'];
     const tracks = rootGetters['data/getTracks'];
@@ -286,6 +450,12 @@ const actions: ActionTree<DataModuleState, any> = {
     downloadJson(data, `spotify-cartography-data-${moment().format()}.json`);
   },
 
+  /**
+   * Loads example data from JSON's.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @param {string} key Key of data to load.
+   */
   loadExampleData({ commit, dispatch }, key) {
     dispatch('map/loadExampleData', key, { root: true });
     let tracks;
@@ -302,25 +472,7 @@ const actions: ActionTree<DataModuleState, any> = {
       tracks = (SMALL_100_10_1000_TRACKS as unknown as TrackData).default.tracks;
     }
 
-    const keys = Object.keys(tracks as Record<string, Track>);
-    let first = Date.now();
-    let last = 0;
-
-    for (let i = 0; i < keys.length; i += 1) {
-      const track = (tracks as Record<string, Track>)[i];
-
-      if (track !== undefined && 'added' in track) {
-        if (track.added < first) {
-          first = track.added;
-        }
-        if (track.added > last) {
-          last = track.added;
-        }
-      }
-    }
-
     commit('setTracks', tracks);
-    commit('setFirstAndLast', { first, last });
   },
 
   changeSettingsType({ commit }, type) {
