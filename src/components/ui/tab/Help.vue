@@ -11,7 +11,7 @@
         Use the "T-SNE" tab to sort the songs, bumping "Iterations" up to 50 should give you some interesting results.
         You'll see a progress circle in the top-left once you click "Run".
         Hovering over a song you can see its name and statistics.
-        Songs are grouped using these statistics, genre, artist, and anything else isn't considered.
+        Songs are grouped using these statistics. Genre, artist, and anything else isn't considered.
       </span>
 
       <div :class="$style.notes">
@@ -23,7 +23,7 @@
           </v-icon>
 
           <div :class="$style.text">
-            <span :class="headline">
+            <span :class="$style.headline">
               Rotate
             </span>
 
@@ -41,7 +41,7 @@
           </v-icon>
 
           <div :class="$style.text">
-            <span :class="headline">
+            <span :class="$style.headline">
               Pan
             </span>
 
@@ -59,7 +59,7 @@
           </v-icon>
 
           <div :class="$style.text">
-            <span :class="headline">
+            <span :class="$style.headline">
               Zoom
             </span>
 
@@ -77,7 +77,7 @@
           </v-icon>
 
           <div :class="$style.text">
-            <span :class="headline">
+            <span :class="$style.headline">
               Play Songs
             </span>
 
@@ -95,7 +95,7 @@
           </v-icon>
 
           <div :class="$style.text">
-            <span :class="headline">
+            <span :class="$style.headline">
               Song Details
             </span>
 
@@ -113,7 +113,7 @@
           </v-icon>
 
           <div :class="$style.text">
-            <span :class="headline">
+            <span :class="$style.headline">
               Close Tabs
             </span>
 
@@ -184,7 +184,7 @@ export default Vue.extend({
       width: 100%;
 
       .headline {
-        font-size: 1.2rem;
+        font-size: 1rem;
       }
 
       .subtext {

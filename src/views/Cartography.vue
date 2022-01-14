@@ -43,8 +43,8 @@ import {
   getContainer,
 } from '@/helpers/three';
 import { getColor } from '@/helpers/colors';
-import Player from '@/components/Player.vue';
-import ProgressDetails from '@/components/ProgressDetails.vue';
+import Player from '@/components/ui/footer/Player.vue';
+import ProgressDetails from '@/components/ui/details/ProgressDetails.vue';
 import { Track } from '@/helpers/spotify-processing';
 
 interface IData {

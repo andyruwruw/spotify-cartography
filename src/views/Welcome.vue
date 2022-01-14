@@ -27,7 +27,7 @@
 import Vue from 'vue';
 import { mapActions } from 'vuex';
 
-import FloatingBackground from '@/components/ui/FloatingBackground.vue';
+import FloatingBackground from '@/components/ui/background/FloatingBackground.vue';
 import SamplesDialog from '@/components/ui/dialog/samples/SamplesDialog.vue';
 
 export default Vue.extend({

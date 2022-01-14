@@ -30,35 +30,7 @@ export interface Track {
   audioFeatures: TrackAudioFeatures;
 }
 
-/**
- * Retrieves number of saved tracks in user's library.
- *
- * @returns {Promise<number>}
- */
-export const getNumberSavedTracks = async () => {
-  const response = await api.spotify.library.getSavedTracks(0, 1);
-
-  return response.body.total;
-};
-
-/**
- * Retrieves user's saved tracks on offset and condenses objects.
- *
- * @param {number} offset Where to start retrieving tracks.
- * @returns {Promise<CondensedSavedTrack[]>}
- */
-export const getSavedTracks = async (offset: number) => {
-  const response = await api.spotify.library.getSavedTracks(offset);
-
-  return response.body.items.map((item: SpotifyApi.SavedTrackObject) => {
-    const date = new Date(item.added_at);
-
-    return {
-      added: date.getTime(),
-      ...item.track,
-    };
-  });
-};
+export const sleepyTime = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Retrieve's track audio features.
@@ -81,6 +53,7 @@ export const getTracksAudioFeatures = async (tracks: SpotifyApi.TrackObjectSimpl
 
   return audioFeatures;
 };
+
 /**
  * Whether enough data is present to deposit.
  *

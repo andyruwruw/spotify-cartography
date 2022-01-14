@@ -406,8 +406,8 @@ import moment from 'moment';
 
 import { REQUEST_TYPE } from '@/config';
 import { Track } from '@/helpers/spotify-processing';
-import Process from './Process.vue';
-import Help from './Help.vue';
+import Process from '../tab/Process.vue';
+import Help from '../tab/Help.vue';
 
 export default Vue.extend({
   name: 'Player',

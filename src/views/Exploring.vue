@@ -22,7 +22,7 @@
 import Vue from 'vue';
 import { mapGetters } from 'vuex';
 
-import FloatingBackground from '@/components/ui/FloatingBackground.vue';
+import FloatingBackground from '@/components/ui/background/FloatingBackground.vue';
 
 interface IData {
   lastUpdate: number;

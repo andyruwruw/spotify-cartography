@@ -10,6 +10,7 @@ import {
   combineTrackElements,
   getTracksAudioFeatures,
   Track,
+  sleepyTime,
 } from '@/helpers/spotify-processing';
 import { downloadJson } from '@/helpers/file';
 import { REQUEST_TYPE } from '@/config';
@@ -201,7 +202,7 @@ const actions: ActionTree<DataModuleState, any> = {
     const tracks: Record<number, Track> = {};
 
     const start = rootGetters['data/getOffset'] === -1 ? 0 : rootGetters['data/getOffset'];
-    const end = rootGetters['data/getLimit'] === -1 ? total : start + rootGetters['data/getLimit'];
+    const end = rootGetters['data/getLimit'] === -1 ? total - 1 : start + rootGetters['data/getLimit'] - 1;
 
     const firstAdded = new Date((await api.spotify.library.getSavedTracks(start, 1)).body.items[0].added_at).getTime();
     const lastAdded = new Date((await api.spotify.library.getSavedTracks(end, 1)).body.items[0].added_at).getTime();
@@ -285,6 +286,7 @@ const actions: ActionTree<DataModuleState, any> = {
             commit('setProgress', (i / playlists.length) + ((j + k) / total) / playlists.length);
           }
         } else if (response.statusCode === 429) {
+          await sleepyTime(500);
           j -= 50;
         }
       }
@@ -347,9 +349,11 @@ const actions: ActionTree<DataModuleState, any> = {
               commit('setProgress', i / albums.length + ((j + k) / totalTracks) / albums.length);
             }
           } else if (trackResponse.statusCode === 429) {
+            await sleepyTime(500);
             j -= 50;
           }
         } else if (simplifiedTrackResponse.statusCode === 429) {
+          await sleepyTime(500);
           j -= 50;
         }
       }
@@ -381,6 +385,7 @@ const actions: ActionTree<DataModuleState, any> = {
       const totalAlbums = await api.spotify.artist.getNumberArtistAlbums(artist.id);
 
       for (let j = 0; j < totalAlbums; j += 50) {
+        await sleepyTime(50);
         const albumResponse = await api.spotify.artist.getArtistAlbums(
           artist.id,
           j,
@@ -395,6 +400,7 @@ const actions: ActionTree<DataModuleState, any> = {
             const totalTracks = await api.spotify.album.getNumberAlbumTracks(album.id);
 
             for (let l = 0; l < totalTracks; l += 50) {
+              await sleepyTime(50);
               const simplifiedTrackResponse = await api.spotify.album.getAlbumTracks(
                 album.id,
                 l,
@@ -437,14 +443,17 @@ const actions: ActionTree<DataModuleState, any> = {
                     commit('setProgress', (i / artists.length) + (j + k) / totalAlbums / artists.length + ((l + m) / totalTracks) / totalAlbums / artists.length);
                   }
                 } else if (trackResponse.statusCode === 429) {
+                  await sleepyTime(500);
                   l -= 50;
                 }
               } else if (simplifiedTrackResponse.statusCode === 429) {
+                await sleepyTime(500);
                 l -= 50;
               }
             }
           }
         } else if (albumResponse.statusCode === 429) {
+          await sleepyTime(500);
           j -= 50;
         }
       }
