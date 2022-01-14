@@ -204,16 +204,16 @@ const actions: ActionTree<DataModuleState, any> = {
     const start = rootGetters['data/getOffset'] === -1 ? 0 : rootGetters['data/getOffset'];
     const end = rootGetters['data/getLimit'] === -1 ? total - 1 : start + rootGetters['data/getLimit'] - 1;
 
-    const firstAdded = new Date((await api.spotify.library.getSavedTracks(start, 1)).body.items[0].added_at).getTime();
-    const lastAdded = new Date((await api.spotify.library.getSavedTracks(end, 1)).body.items[0].added_at).getTime();
+    // const firstAdded = new Date((await api.spotify.library.getSavedTracks(start, 1)).body.items[0].added_at).getTime();
+    // const lastAdded = new Date((await api.spotify.library.getSavedTracks(end, 1)).body.items[0].added_at).getTime();
 
     for (let i = start; i < end; i += 50) {
       const response = await api.spotify.library.getSavedTracks(i, i + 50 <= end ? 50 : end - i);
 
       const rawTracks = response.body.items.map((track) => track.track);
-      const attatchedData = response.body.items.map((track, index) => ({
+      const attatchedData = response.body.items.map((track, index, array) => ({
         added: (new Date(track.added_at)).getTime(),
-        calculatedValue: ((new Date(track.added_at)).getTime() - firstAdded) / (lastAdded - firstAdded),
+        calculatedValue: index / array.length,
       }));
       const audioFeatures = await getTracksAudioFeatures(rawTracks);
 
