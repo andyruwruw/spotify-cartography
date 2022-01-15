@@ -14,12 +14,26 @@ import {
 } from '@/helpers/spotify-processing';
 import { downloadJson } from '@/helpers/file';
 import { REQUEST_TYPE } from '@/config';
-import * as ALL_10_1050_TRACKS from '@/assets/examples/all-10-1050-tracks.json';
-import * as LIKED_LIMITED_1000_15_1000_TRACKS from '@/assets/examples/liked-limited-1000-15-1000-tracks.json';
+import * as THE_WORKS_SAMPLE from '@/assets/examples/the-works.json';
+import * as CONSTELLATIONS_SAMPLE from '@/assets/examples/constellations.json';
+import * as STRINGS_SAMPLE from '@/assets/examples/strings.json';
 import api from '@/api';
 
-interface TrackData {
+export interface SampleData {
   default: {
+    sampleSize: number;
+    perplexity: number;
+    epsilon: number;
+    iterations: number;
+    type: string;
+    playlistIds?: string[];
+    albumIds?: string[];
+    artistIds?: string[];
+    timeRange?: string;
+    limit?: number;
+    offset?: number;
+    updated: number,
+    graph: Array<Array<number>>;
     tracks: Record<number, Track>;
   }
 }
@@ -489,9 +503,11 @@ const actions: ActionTree<DataModuleState, any> = {
     let tracks;
 
     if (key === 'all') {
-      tracks = (ALL_10_1050_TRACKS as unknown as TrackData).default.tracks;
+      tracks = (THE_WORKS_SAMPLE as unknown as SampleData).default.tracks;
     } else if (key === 'constellations') {
-      tracks = (LIKED_LIMITED_1000_15_1000_TRACKS as unknown as TrackData).default.tracks;
+      tracks = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.tracks;
+    } else if (key === 'strings') {
+      tracks = (STRINGS_SAMPLE as unknown as SampleData).default.tracks;
     }
 
     commit('setTracks', tracks);

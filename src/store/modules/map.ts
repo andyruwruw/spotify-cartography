@@ -7,14 +7,10 @@ import {
 import { TSNE } from '@keckelt/tsne';
 
 import { Track } from '@/helpers/spotify-processing';
-import * as ALL_10_1050_GRAPH from '@/assets/examples/all-10-1050-graph.json';
-import * as LIKED_LIMITED_1000_15_1000_GRAPH from '@/assets/examples/liked-limited-1000-15-1000-graph.json';
-
-interface GraphData {
-  default: {
-    graph: Array<Array<number>>;
-  }
-}
+import * as THE_WORKS_SAMPLE from '@/assets/examples/the-works.json';
+import * as CONSTELLATIONS_SAMPLE from '@/assets/examples/constellations.json';
+import * as STRINGS_SAMPLE from '@/assets/examples/strings.json';
+import { SampleData } from './data';
 
 export interface MapModuleState {
   graph: Array<Array<number>>;
@@ -190,21 +186,31 @@ const actions: ActionTree<MapModuleState, any> = {
 
   loadExampleData({ commit }, key) {
     let graphs;
-    let perplexity = 10;
-    const iterations = 1000;
+    let perplexity;
+    let epsilon;
+    let iterations;
 
     if (key === 'all') {
-      graphs = (ALL_10_1050_GRAPH as unknown as GraphData).default.graph;
-      perplexity = 80;
+      graphs = (THE_WORKS_SAMPLE as unknown as SampleData).default.graph;
+      perplexity = (THE_WORKS_SAMPLE as unknown as SampleData).default.perplexity;
+      epsilon = (THE_WORKS_SAMPLE as unknown as SampleData).default.epsilon;
+      iterations = (THE_WORKS_SAMPLE as unknown as SampleData).default.iterations;
     } else if (key === 'constellations') {
-      graphs = (LIKED_LIMITED_1000_15_1000_GRAPH as unknown as GraphData).default.graph;
-      perplexity = 15;
+      graphs = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.graph;
+      perplexity = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.perplexity;
+      epsilon = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.epsilon;
+      iterations = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.iterations;
+    } else if (key === 'strings') {
+      graphs = (STRINGS_SAMPLE as unknown as SampleData).default.graph;
+      perplexity = (STRINGS_SAMPLE as unknown as SampleData).default.perplexity;
+      epsilon = (STRINGS_SAMPLE as unknown as SampleData).default.epsilon;
+      iterations = (STRINGS_SAMPLE as unknown as SampleData).default.iterations;
     }
 
     commit('setGraph', graphs);
 
     commit('setPerplexity', perplexity);
-    commit('setEpsilon', 10);
+    commit('setEpsilon', epsilon);
     commit('setIterations', iterations);
   },
 };
