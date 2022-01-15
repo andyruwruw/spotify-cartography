@@ -8,10 +8,7 @@ import { TSNE } from '@keckelt/tsne';
 
 import { Track } from '@/helpers/spotify-processing';
 import * as ALL_10_1050_GRAPH from '@/assets/examples/all-10-1050-graph.json';
-import * as SMALL_5_10_1000_GRAPH from '@/assets/examples/small-5-10-1000-graph.json';
-import * as SMALL_10_10_1000_GRAPH from '@/assets/examples/small-10-10-1000-graph.json';
-import * as SMALL_30_10_1000_GRAPH from '@/assets/examples/small-30-10-1000-graph.json';
-import * as SMALL_100_10_1000_GRAPH from '@/assets/examples/small-100-10-1000-graph.json';
+import * as LIKED_LIMITED_1000_15_1000_GRAPH from '@/assets/examples/liked-limited-1000-15-1000-graph.json';
 
 interface GraphData {
   default: {
@@ -199,18 +196,9 @@ const actions: ActionTree<MapModuleState, any> = {
     if (key === 'all') {
       graphs = (ALL_10_1050_GRAPH as unknown as GraphData).default.graph;
       perplexity = 80;
-    } else if (key === 'small') {
-      graphs = (SMALL_5_10_1000_GRAPH as unknown as GraphData).default.graph;
-      perplexity = 5;
-    } else if (key === 'medium') {
-      graphs = (SMALL_10_10_1000_GRAPH as unknown as GraphData).default.graph;
-      perplexity = 10;
-    } else if (key === 'large') {
-      graphs = (SMALL_30_10_1000_GRAPH as unknown as GraphData).default.graph;
-      perplexity = 30;
-    } else if (key === 'x-large') {
-      graphs = (SMALL_100_10_1000_GRAPH as unknown as GraphData).default.graph;
-      perplexity = 100;
+    } else if (key === 'constellations') {
+      graphs = (LIKED_LIMITED_1000_15_1000_GRAPH as unknown as GraphData).default.graph;
+      perplexity = 15;
     }
 
     commit('setGraph', graphs);

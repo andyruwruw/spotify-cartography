@@ -15,10 +15,7 @@ import {
 import { downloadJson } from '@/helpers/file';
 import { REQUEST_TYPE } from '@/config';
 import * as ALL_10_1050_TRACKS from '@/assets/examples/all-10-1050-tracks.json';
-import * as SMALL_5_10_1000_TRACKS from '@/assets/examples/small-5-10-1000-tracks.json';
-import * as SMALL_10_10_1000_TRACKS from '@/assets/examples/small-10-10-1000-tracks.json';
-import * as SMALL_30_10_1000_TRACKS from '@/assets/examples/small-30-10-1000-tracks.json';
-import * as SMALL_100_10_1000_TRACKS from '@/assets/examples/small-100-10-1000-tracks.json';
+import * as LIKED_LIMITED_1000_15_1000_TRACKS from '@/assets/examples/liked-limited-1000-15-1000-tracks.json';
 import api from '@/api';
 
 interface TrackData {
@@ -493,14 +490,8 @@ const actions: ActionTree<DataModuleState, any> = {
 
     if (key === 'all') {
       tracks = (ALL_10_1050_TRACKS as unknown as TrackData).default.tracks;
-    } else if (key === 'small') {
-      tracks = (SMALL_5_10_1000_TRACKS as unknown as TrackData).default.tracks;
-    } else if (key === 'medium') {
-      tracks = (SMALL_10_10_1000_TRACKS as unknown as TrackData).default.tracks;
-    } else if (key === 'large') {
-      tracks = (SMALL_30_10_1000_TRACKS as unknown as TrackData).default.tracks;
-    } else if (key === 'x-large') {
-      tracks = (SMALL_100_10_1000_TRACKS as unknown as TrackData).default.tracks;
+    } else if (key === 'constellations') {
+      tracks = (LIKED_LIMITED_1000_15_1000_TRACKS as unknown as TrackData).default.tracks;
     }
 
     commit('setTracks', tracks);
