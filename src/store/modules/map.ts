@@ -6,10 +6,13 @@ import {
 } from 'vuex';
 import { TSNE } from '@keckelt/tsne';
 
-import { Track } from '@/helpers/spotify-processing';
-import * as THE_WORKS_SAMPLE from '@/assets/examples/the-works.json';
-import * as CONSTELLATIONS_SAMPLE from '@/assets/examples/constellations.json';
-import * as STRINGS_SAMPLE from '@/assets/examples/strings.json';
+import {
+  Track,
+  generateVector,
+} from '@/helpers/spotify-processing';
+import * as THE_WORKS_SAMPLE from '@/assets/samples/the-works.json';
+import * as CONSTELLATIONS_SAMPLE from '@/assets/samples/constellations.json';
+import * as DISJOINTED_SAMPLE from '@/assets/samples/disjointed.json';
 import { SampleData } from './data';
 
 export interface MapModuleState {
@@ -121,17 +124,29 @@ const actions: ActionTree<MapModuleState, any> = {
   async processData({ commit, rootGetters, dispatch }) {
     commit('setProcessState', false);
     const tracks = Object.values(rootGetters['data/getTracks'] as Record<string, Track>);
-    const vectors = tracks.map((track: Track) => [
-      track.audioFeatures.valence,
-      track.audioFeatures.energy,
-      track.audioFeatures.danceability,
-      track.audioFeatures.acousticness,
-      track.audioFeatures.liveness,
-      track.audioFeatures.speechiness,
-      track.audioFeatures.instrumentalness,
-      track.audioFeatures.tempo,
-      track.audioFeatures.popularity,
-    ]);
+
+    const valenceWeight = rootGetters['preferences/getValenceWeight'];
+    const energyWeight = rootGetters['preferences/getEnergyWeight'];
+    const danceabilityWeight = rootGetters['preferences/getDanceabilityWeight'];
+    const acousticnessWeight = rootGetters['preferences/getAcousticnessWeight'];
+    const livenessWeight = rootGetters['preferences/getLivenessWeight'];
+    const speechinessWeight = rootGetters['preferences/getSpeechinessWeight'];
+    const instrumentalnessWeight = rootGetters['preferences/getInstrumentalnessWeight'];
+    const tempoWeight = rootGetters['preferences/getTempoWeight'];
+    const popularityWeight = rootGetters['preferences/getPopularityWeight'];
+
+    const vectors = tracks.map((track: Track) => generateVector(
+      track,
+      valenceWeight,
+      energyWeight,
+      danceabilityWeight,
+      acousticnessWeight,
+      livenessWeight,
+      speechinessWeight,
+      instrumentalnessWeight,
+      tempoWeight,
+      popularityWeight,
+    ));
 
     if (tracks.length === 0) {
       return;
@@ -200,11 +215,11 @@ const actions: ActionTree<MapModuleState, any> = {
       perplexity = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.perplexity;
       epsilon = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.epsilon;
       iterations = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.iterations;
-    } else if (key === 'strings') {
-      graphs = (STRINGS_SAMPLE as unknown as SampleData).default.graph;
-      perplexity = (STRINGS_SAMPLE as unknown as SampleData).default.perplexity;
-      epsilon = (STRINGS_SAMPLE as unknown as SampleData).default.epsilon;
-      iterations = (STRINGS_SAMPLE as unknown as SampleData).default.iterations;
+    } else if (key === 'disjointed') {
+      graphs = (DISJOINTED_SAMPLE as unknown as SampleData).default.graph;
+      perplexity = (DISJOINTED_SAMPLE as unknown as SampleData).default.perplexity;
+      epsilon = (DISJOINTED_SAMPLE as unknown as SampleData).default.epsilon;
+      iterations = (DISJOINTED_SAMPLE as unknown as SampleData).default.iterations;
     }
 
     commit('setGraph', graphs);

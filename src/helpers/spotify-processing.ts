@@ -1,4 +1,5 @@
 import api from '@/api';
+import { AUDIO_FEATURE_MEDIANS } from '@/config';
 
 export interface TrackAttatchedData {
   added?: number;
@@ -113,3 +114,72 @@ export const combineTrackElements = (
   }
   return null;
 };
+
+/**
+ * Alters value based on weight un-uniformly based on distance to median.
+ *
+ * @param {number} value Original value.
+ * @param {number} weight Weight of value.
+ * @param {number} median Approximate median of value distribution.
+ * @returns {number} Number weighted by weight and distance to median.
+ */
+const getValueOffWeight = (
+  value: number,
+  weight: number,
+  median: number,
+): number => {
+  if (weight === 1) {
+    return value;
+  } if (weight === 0) {
+    return median;
+  }
+
+  const deviation = value - median; // -50
+
+  const weightedDeviation = deviation * weight; // -10
+
+  const distanceWeight = Math.abs(deviation) / median; // 1
+
+  const inverseWeight = 1 - weight; // .8
+  const finalDeviation = weightedDeviation + (weightedDeviation * distanceWeight * inverseWeight); // -10 + (-10 * 1 * .8)
+
+  return median + finalDeviation;
+};
+
+/**
+ * Generates the vectors based on track object.
+ *
+ * @param {Track} track Track object
+ * @param {number} valenceWeight Weight of valence.
+ * @param {number} energyWeight Weight of energy.
+ * @param {number} danceabilityWeight Weight of danceability.
+ * @param {number} acousticnessWeight Weight of acousticness.
+ * @param {number} livenessWeight Weight of liveness.
+ * @param {number} speechinessWeight Weight of speechiness.
+ * @param {number} instrumentalnessWeight Weight of instrumentalness.
+ * @param {number} tempoWeight Weight of tempo.
+ * @param {number} popularityWeight Weight of popularity.
+ * @returns {number[]} Vector of track values.
+ */
+export const generateVector = (
+  track: Track,
+  valenceWeight = 1,
+  energyWeight = 1,
+  danceabilityWeight = 1,
+  acousticnessWeight = 1,
+  livenessWeight = 1,
+  speechinessWeight = 1,
+  instrumentalnessWeight = 1,
+  tempoWeight = 1,
+  popularityWeight = 1,
+) => ([
+  getValueOffWeight(track.audioFeatures.valence, valenceWeight, AUDIO_FEATURE_MEDIANS.valence),
+  getValueOffWeight(track.audioFeatures.energy, energyWeight, AUDIO_FEATURE_MEDIANS.energy),
+  getValueOffWeight(track.audioFeatures.danceability, danceabilityWeight, AUDIO_FEATURE_MEDIANS.danceability),
+  getValueOffWeight(track.audioFeatures.acousticness, acousticnessWeight, AUDIO_FEATURE_MEDIANS.acousticness),
+  getValueOffWeight(track.audioFeatures.liveness, livenessWeight, AUDIO_FEATURE_MEDIANS.liveness),
+  getValueOffWeight(track.audioFeatures.speechiness, speechinessWeight, AUDIO_FEATURE_MEDIANS.speechiness),
+  getValueOffWeight(track.audioFeatures.instrumentalness, instrumentalnessWeight, AUDIO_FEATURE_MEDIANS.instrumentalness),
+  getValueOffWeight(track.audioFeatures.tempo, tempoWeight, AUDIO_FEATURE_MEDIANS.tempo),
+  getValueOffWeight(track.audioFeatures.popularity, popularityWeight, AUDIO_FEATURE_MEDIANS.popularity),
+]);

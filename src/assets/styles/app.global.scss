@@ -44,3 +44,28 @@ h4 {
   height: 100vh;
   display: block;
 }
+
+@keyframes slide-in-tab {
+  from {
+    bottom: 0px;
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    bottom: -240px;
+  }
+  to {
+    bottom: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

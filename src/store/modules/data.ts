@@ -14,9 +14,9 @@ import {
 } from '@/helpers/spotify-processing';
 import { downloadJson } from '@/helpers/file';
 import { REQUEST_TYPE } from '@/config';
-import * as THE_WORKS_SAMPLE from '@/assets/examples/the-works.json';
-import * as CONSTELLATIONS_SAMPLE from '@/assets/examples/constellations.json';
-import * as STRINGS_SAMPLE from '@/assets/examples/strings.json';
+import * as THE_WORKS_SAMPLE from '@/assets/samples/the-works.json';
+import * as CONSTELLATIONS_SAMPLE from '@/assets/samples/constellations.json';
+import * as DISJOINTED_SAMPLE from '@/assets/samples/disjointed.json';
 import api from '@/api';
 
 export interface SampleData {
@@ -506,8 +506,8 @@ const actions: ActionTree<DataModuleState, any> = {
       tracks = (THE_WORKS_SAMPLE as unknown as SampleData).default.tracks;
     } else if (key === 'constellations') {
       tracks = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.tracks;
-    } else if (key === 'strings') {
-      tracks = (STRINGS_SAMPLE as unknown as SampleData).default.tracks;
+    } else if (key === 'disjointed') {
+      tracks = (DISJOINTED_SAMPLE as unknown as SampleData).default.tracks;
     }
 
     commit('setTracks', tracks);

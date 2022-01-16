@@ -141,6 +141,9 @@ export const ORBIT_CONTROLS_DEFAULT_VALUES: Record<string, number | boolean> = {
   minDistance: 0.001,
 };
 
+/**
+ * Types of requests.
+ */
 export const REQUEST_TYPE = {
   TOP_LISTENED: 'charts',
   LIKED_SONGS: 'liked',
@@ -148,4 +151,19 @@ export const REQUEST_TYPE = {
   ALBUMS: 'albums',
   ARTISTS: 'artists',
   NONE: 'none',
+};
+
+/**
+ * Medians of audio feature distributions.
+ */
+export const AUDIO_FEATURE_MEDIANS = {
+  valence: 0.5,
+  energy: 0.5,
+  danceability: 0.5,
+  acousticness: 0.5,
+  liveness: 0.5,
+  speechiness: 0.5,
+  instrumentalness: 0.5,
+  tempo: 125,
+  popularity: 50,
 };
