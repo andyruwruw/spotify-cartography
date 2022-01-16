@@ -6,14 +6,11 @@ import {
 } from 'vuex';
 import { TSNE } from '@keckelt/tsne';
 
+import { generateVector } from '@/helpers/spotify-processing';
 import {
+  SampleData,
   Track,
-  generateVector,
-} from '@/helpers/spotify-processing';
-import * as THE_WORKS_SAMPLE from '@/assets/samples/the-works.json';
-import * as CONSTELLATIONS_SAMPLE from '@/assets/samples/constellations.json';
-import * as DISJOINTED_SAMPLE from '@/assets/samples/disjointed.json';
-import { SampleData } from './data';
+} from '@/config';
 
 export interface MapModuleState {
   graph: Array<Array<number>>;
@@ -25,6 +22,7 @@ export interface MapModuleState {
   processDone: boolean;
   update: number;
   abort: boolean;
+  isSample: boolean;
 }
 
 const defaultState = (): MapModuleState => ({
@@ -42,6 +40,7 @@ const defaultState = (): MapModuleState => ({
   update: 1,
 
   abort: false,
+  isSample: false,
 });
 
 const getters: GetterTree<MapModuleState, any> = {
@@ -71,6 +70,9 @@ const getters: GetterTree<MapModuleState, any> = {
   },
   isAbort(state): boolean {
     return state.abort;
+  },
+  isSample(state): boolean {
+    return state.isSample;
   },
 };
 
@@ -102,6 +104,9 @@ const mutations: MutationTree<MapModuleState> = {
   setAbort(state, abort: boolean) {
     state.abort = abort;
   },
+  setIsSample(state, isSample: boolean) {
+    state.isSample = isSample;
+  },
 };
 
 const actions: ActionTree<MapModuleState, any> = {
@@ -112,6 +117,10 @@ const actions: ActionTree<MapModuleState, any> = {
   },
 
   async firstProcess({ rootGetters, commit, dispatch }) {
+    if (rootGetters['map/isSample']) {
+      return;
+    }
+
     const tracks = Object.values(rootGetters['data/getTracks'] as Record<string, Track>);
 
     commit('setPerplexity', Math.round(tracks.length ** 0.5));
@@ -199,34 +208,19 @@ const actions: ActionTree<MapModuleState, any> = {
     commit('setAbort', true);
   },
 
-  loadExampleData({ commit }, key) {
-    let graphs;
-    let perplexity;
-    let epsilon;
-    let iterations;
+  /**
+   * Loads example data from JSON's.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @param {SampleData} sampleData Data to be loaded.
+   */
+  loadExampleData({ commit }, sampleData: SampleData) {
+    commit('setGraph', sampleData.default.graph);
+    commit('setPerplexity', sampleData.default.perplexity);
+    commit('setEpsilon', sampleData.default.epsilon);
+    commit('setIterations', sampleData.default.iterations);
 
-    if (key === 'all') {
-      graphs = (THE_WORKS_SAMPLE as unknown as SampleData).default.graph;
-      perplexity = (THE_WORKS_SAMPLE as unknown as SampleData).default.perplexity;
-      epsilon = (THE_WORKS_SAMPLE as unknown as SampleData).default.epsilon;
-      iterations = (THE_WORKS_SAMPLE as unknown as SampleData).default.iterations;
-    } else if (key === 'constellations') {
-      graphs = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.graph;
-      perplexity = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.perplexity;
-      epsilon = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.epsilon;
-      iterations = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.iterations;
-    } else if (key === 'disjointed') {
-      graphs = (DISJOINTED_SAMPLE as unknown as SampleData).default.graph;
-      perplexity = (DISJOINTED_SAMPLE as unknown as SampleData).default.perplexity;
-      epsilon = (DISJOINTED_SAMPLE as unknown as SampleData).default.epsilon;
-      iterations = (DISJOINTED_SAMPLE as unknown as SampleData).default.iterations;
-    }
-
-    commit('setGraph', graphs);
-
-    commit('setPerplexity', perplexity);
-    commit('setEpsilon', epsilon);
-    commit('setIterations', iterations);
+    commit('setIsSample', true);
   },
 };
 

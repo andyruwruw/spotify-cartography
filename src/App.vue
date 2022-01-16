@@ -38,7 +38,9 @@ export default Vue.extend({
 
   methods: {
     goHome() {
-      this.$router.push('/');
+      if (this.$route.path !== '/') {
+        this.$router.push('/');
+      }
     },
   },
 });

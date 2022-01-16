@@ -22,7 +22,8 @@
 <script lang="ts">
 import Vue from 'vue';
 
-import { Track } from '@/helpers/spotify-processing';
+import { Track } from '@/config';
+
 import { STATISTIC_DETAILS } from '../../config';
 import Statistic from './statistic.vue';
 

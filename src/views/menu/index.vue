@@ -48,6 +48,7 @@ import {
 
 import { REQUEST_TYPE } from '@/config';
 import FloatingBackground from '@/components/ui/background/floating-background.vue';
+
 import MainMenu from './components/pages/main-menu.vue';
 import Albums from './components/pages/albums.vue';
 import Artists from './components/pages/artists.vue';

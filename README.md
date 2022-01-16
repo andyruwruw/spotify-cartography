@@ -2,9 +2,9 @@
 
 [Visit the website](https://spotify-cartography.vercel.app/)
 
-Explore your Spotify library in a 3D space that groups similar songs together based on their happiness, energy, danceability, and other variables. Using T-SNE and Three.js.
+First place winning project for [Oregon State Beaverhacks Winter 2022 - Data](https://beaverhacks-winter-2022.devpost.com/?ref_feature=challenge&ref_medium=discover).
 
-Made for [Oregon State Beaverhacks Winter 2022 - Data](https://beaverhacks-winter-2022.devpost.com/?ref_feature=challenge&ref_medium=discover).
+Explore your Spotify library in a 3D space that groups similar songs together based on their happiness, energy, danceability, and other variables. Using T-SNE and Three.js.
 
 ## Table of Contents
 - [Inspiration](#inspiration)

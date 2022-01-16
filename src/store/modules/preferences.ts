@@ -5,6 +5,8 @@ import {
   MutationTree,
 } from 'vuex';
 
+import { SampleData } from '@/config';
+
 export interface PreferencesModuleState {
   valenceWeight: number;
   energyWeight: number;
@@ -116,6 +118,26 @@ const actions: ActionTree<PreferencesModuleState, any> = {
     commit('setInstrumentalnessWeight', instrumentalnessWeight);
     commit('setTempoWeight', tempoWeight);
     commit('setPopularityWeight', popularityWeight);
+  },
+
+  /**
+   * Loads example data from JSON's.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @param {SampleData} sampleData Data to be loaded.
+   */
+  loadExampleData({ dispatch }, sampleData: SampleData) {
+    dispatch('setWeights', {
+      valenceWeight: sampleData.default.valenceWeight,
+      energyWeight: sampleData.default.energyWeight,
+      danceabilityWeight: sampleData.default.danceabilityWeight,
+      acousticnessWeight: sampleData.default.acousticnessWeight,
+      livenessWeight: sampleData.default.livenessWeight,
+      speechinessWeight: sampleData.default.speechinessWeight,
+      instrumentalnessWeight: sampleData.default.instrumentalnessWeight,
+      tempoWeight: sampleData.default.tempoWeight,
+      popularityWeight: sampleData.default.popularityWeight,
+    });
   },
 };
 

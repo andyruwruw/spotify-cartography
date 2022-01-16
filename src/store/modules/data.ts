@@ -9,34 +9,22 @@ import moment from 'moment';
 import {
   combineTrackElements,
   getTracksAudioFeatures,
-  Track,
   sleepyTime,
 } from '@/helpers/spotify-processing';
 import { downloadJson } from '@/helpers/file';
-import { REQUEST_TYPE } from '@/config';
+import {
+  REQUEST_TYPE,
+  Track,
+  SampleData,
+} from '@/config';
 import * as THE_WORKS_SAMPLE from '@/assets/samples/the-works.json';
 import * as CONSTELLATIONS_SAMPLE from '@/assets/samples/constellations.json';
 import * as DISJOINTED_SAMPLE from '@/assets/samples/disjointed.json';
+import * as EDDIES_SAMPLE from '@/assets/samples/eddies.json';
+import * as INTERSECTION_SAMPLE from '@/assets/samples/intersection.json';
+import * as SLINKY_SAMPLE from '@/assets/samples/slinky.json';
+import * as STORY_BOOK_SAMPLE from '@/assets/samples/story-book.json';
 import api from '@/api';
-
-export interface SampleData {
-  default: {
-    sampleSize: number;
-    perplexity: number;
-    epsilon: number;
-    iterations: number;
-    type: string;
-    playlistIds?: string[];
-    albumIds?: string[];
-    artistIds?: string[];
-    timeRange?: string;
-    limit?: number;
-    offset?: number;
-    updated: number,
-    graph: Array<Array<number>>;
-    tracks: Record<number, Track>;
-  }
-}
 
 export interface DataModuleState {
   progress: number;
@@ -499,44 +487,112 @@ const actions: ActionTree<DataModuleState, any> = {
    * @param {string} key Key of data to load.
    */
   loadExampleData({ commit, dispatch }, key) {
-    dispatch('map/loadExampleData', key, { root: true });
-    let tracks;
+    let sampleData;
 
-    if (key === 'all') {
-      tracks = (THE_WORKS_SAMPLE as unknown as SampleData).default.tracks;
-    } else if (key === 'constellations') {
-      tracks = (CONSTELLATIONS_SAMPLE as unknown as SampleData).default.tracks;
-    } else if (key === 'disjointed') {
-      tracks = (DISJOINTED_SAMPLE as unknown as SampleData).default.tracks;
+    switch (key) {
+      case 'all':
+        sampleData = THE_WORKS_SAMPLE as unknown as SampleData;
+        break;
+      case 'disjointed':
+        sampleData = DISJOINTED_SAMPLE as unknown as SampleData;
+        break;
+      case 'eddies':
+        sampleData = EDDIES_SAMPLE as unknown as SampleData;
+        break;
+      case 'intersection':
+        sampleData = INTERSECTION_SAMPLE as unknown as SampleData;
+        break;
+      case 'slinky':
+        sampleData = SLINKY_SAMPLE as unknown as SampleData;
+        break;
+      case 'story-book':
+        sampleData = STORY_BOOK_SAMPLE as unknown as SampleData;
+        break;
+      default:
+        sampleData = CONSTELLATIONS_SAMPLE as unknown as SampleData;
+        break;
     }
 
-    commit('setTracks', tracks);
+    dispatch(
+      'map/loadExampleData',
+      sampleData,
+      { root: true },
+    );
+    dispatch(
+      'preferences/loadExampleData',
+      sampleData,
+      { root: true },
+    );
+
+    commit('setTracks', sampleData.default.tracks);
   },
 
+  /**
+   * Changes type of data being requested.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @param {string} type New request type.
+   */
   changeSettingsType({ commit }, type) {
     commit('setType', type);
   },
 
+  /**
+   * Changes time range of top listened songs requested.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @param {string} timeRange Spotify time range, 'long_term', 'medium_term', or 'short_term'.
+   */
   changeSettingsTimeRange({ commit }, timeRange) {
     commit('setTimeRange', timeRange);
   },
 
+  /**
+   * Changes limit on saved songs requested.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @param {number} limit Limit on number of songs requested.
+   */
   changeSettingsLimit({ commit }, limit) {
     commit('setLimit', limit);
   },
 
+  /**
+   * Changes offset on saved songs requested.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @param {number} offset Where to begin requesting songs.
+   */
   changeSettingsOffset({ commit }, offset) {
     commit('setOffset', offset);
   },
 
+  /**
+   * Changes which playlist's tracks are being requested.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @param {SpotifyApi.PlaylistObjectFull[]} playlists Playlists to be requested.
+   */
   changeSettingsPlaylists({ commit }, playlists) {
     commit('setPlaylists', playlists);
   },
 
+  /**
+   * Changes which album's tracks are being requested.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @param {SpotifyApi.AlbumObjectFull[]} albums Albums to be requested.
+   */
   changeSettingsAlbums({ commit }, albums) {
     commit('setAlbums', albums);
   },
 
+  /**
+   * Changes which artist's tracks are being requested.
+   *
+   * @param {ActionContext<DataModuleState, any>} context Vuex context object.
+   * @param {SpotifyApi.ArtistObjectFull[]} artists Artists to be requested.
+   */
   changeSettingsArtists({ commit }, artists) {
     commit('setArtists', artists);
   },

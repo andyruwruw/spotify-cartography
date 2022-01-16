@@ -41,7 +41,8 @@ import {
   getContainer,
 } from '@/helpers/three';
 import { getColor } from '@/helpers/colors';
-import { Track } from '@/helpers/spotify-processing';
+import { Track } from '@/config';
+
 import Player from './components/player/player.vue';
 import ProgressDetails from './components/loading-bar/progress-details.vue';
 

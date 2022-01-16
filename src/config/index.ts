@@ -60,6 +60,64 @@ export const SCOPES = [
  */
 export const MARKET = 'US';
 
+export interface TrackAttatchedData {
+  added?: number;
+  playlistId?: string;
+  albumId?: string;
+  artistId?: string;
+  index?: number;
+  calculatedValue: number;
+}
+
+export interface TrackAudioFeatures {
+  acousticness: number;
+  danceability: number;
+  energy: number;
+  instrumentalness: number;
+  liveness: number;
+  speechiness: number;
+  tempo: number;
+  valence: number;
+  popularity: number;
+}
+
+export interface Track {
+  attatchedData: TrackAttatchedData;
+  id: string;
+  name: string;
+  artist: string;
+  image: string;
+  audioFeatures: TrackAudioFeatures;
+}
+
+export interface SampleData {
+  default: {
+    sampleSize: number;
+    perplexity: number;
+    epsilon: number;
+    iterations: number;
+    type: string;
+    playlistIds?: string[];
+    albumIds?: string[];
+    artistIds?: string[];
+    timeRange?: string;
+    limit?: number;
+    offset?: number;
+    updated: number;
+    valenceWeight: number;
+    energyWeight: number;
+    danceabilityWeight: number;
+    acousticnessWeight: number;
+    livenessWeight: number;
+    speechinessWeight: number;
+    instrumentalnessWeight: number;
+    tempoWeight: number;
+    popularityWeight: number;
+    graph: Array<Array<number>>;
+    tracks: Record<number, Track>;
+  }
+}
+
 /**
  * Element ID for Three.js canvas.
  *

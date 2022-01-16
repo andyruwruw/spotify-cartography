@@ -17,6 +17,10 @@
         {{ button.label }}
       </v-btn>
     </div>
+
+    <div :class="$style['button-wrapper']">
+      <samples-dialog button="secondary" />
+    </div>
   </div>
 </template>
 
@@ -24,10 +28,16 @@
 import Vue from 'vue';
 
 import { REQUEST_TYPE } from '@/config';
+import SamplesDialog from '@/components/ui/dialogs/samples-dialog/samples-dialog.vue';
+
 import { BUTTON_COLORS } from '../../config';
 
 export default Vue.extend({
   name: 'MainMenu',
+
+  components: {
+    SamplesDialog,
+  },
 
   props: {
     tab: {

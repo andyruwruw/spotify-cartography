@@ -12,6 +12,15 @@
     "09RJcPpObz3RBJyfIROa8Q"
   ],
   "updated": 1642233600000,
+  "valenceWeight": 1,
+  "energyWeight": 1,
+  "danceabilityWeight": 1,
+  "acousticnessWeight": 1,
+  "livenessWeight": 1,
+  "speechinessWeight": 1,
+  "instrumentalnessWeight": 1,
+  "tempoWeight": 1,
+  "popularityWeight": 1,
   "graph": [
     [
       -32.480349999416745,

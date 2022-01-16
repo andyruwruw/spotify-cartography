@@ -1,35 +1,9 @@
 import api from '@/api';
-import { AUDIO_FEATURE_MEDIANS } from '@/config';
-
-export interface TrackAttatchedData {
-  added?: number;
-  playlistId?: string;
-  albumId?: string;
-  artistId?: string;
-  index?: number;
-  calculatedValue: number;
-}
-
-export interface TrackAudioFeatures {
-  acousticness: number;
-  danceability: number;
-  energy: number;
-  instrumentalness: number;
-  liveness: number;
-  speechiness: number;
-  tempo: number;
-  valence: number;
-  popularity: number;
-}
-
-export interface Track {
-  attatchedData: TrackAttatchedData;
-  id: string;
-  name: string;
-  artist: string;
-  image: string;
-  audioFeatures: TrackAudioFeatures;
-}
+import {
+  AUDIO_FEATURE_MEDIANS,
+  Track,
+  TrackAttatchedData,
+} from '@/config';
 
 export const sleepyTime = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 

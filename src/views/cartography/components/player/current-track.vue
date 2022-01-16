@@ -34,7 +34,7 @@
 <script lang="ts">
 import Vue from 'vue';
 
-import { Track } from '@/helpers/spotify-processing';
+import { Track } from '@/config';
 
 interface IMethods {
   link: () => void;
