@@ -138,19 +138,53 @@ Every point you see on your 3D map is a song. The bottom will display details on
 
 Your frame rate is displayed at the top-right. This is mostly impacted by the number of points you have on the screen.
 
+---
+
+<p id="inspiration" align="center">
+  <img src="./documentation/images/controls-banner.png"></img>
+</p>
+
 ### **Controls**
 
-Use *Left-Click*, *Right-Click*, and *Scroll-Wheel* to orbit around the scene.
+Use your mouse to move around the scene. Currently there isn't support for touchscreens and VR, but hopefully that can be added soon!
 
-You can *Control + Click* or *Shift + Click* to play a song. You must be logged into Spotify, and have Spotify playing music on any device for it to work.
+**Rotate**: Hold *Left Click* and move your mouse to rotate around the origin, which is default to the center of the 3D space.
+
+**Pan**: Hold *Right-Click* and move your mouse to move the origin.
+
+**Zoom**: Use the *Scroll-Wheel* to zoom closer and farther from the origin. You can also press down your middle mouse button and move your mouse up and down.
+
+**Play Song**: You can *Control + Click* or *Shift + Click* to play a song. You must be logged into Spotify, and have Spotify playing music on any device for it to work.
+
+---
+
+<p id="inspiration" align="center">
+  <img src="./documentation/images/song-details-banner.gif"></img>
+</p>
 
 ### **Song Details**
 
-You can hover over any song to see it's details below, including the nine variables such as it's *happiness* or *energy*. If applicable, Spotify Cartographer will also show the date it was added.
+You can hover over any song to see it's details at the bottom, including it's cover art, name and artists.
+
+You'll also be shown nine variables such as the song's *happiness* or *energy*. These are the variables that were used to map the point.
+
+If applicable, Spotify Cartographer will also show the date it was added.
+
+---
+
+<p id="inspiration" align="center">
+  <img src="./documentation/images/rotation-banner.gif"></img>
+</p>
 
 ### **Points Rotational Speed**
 
 The **speed at which points rotate** is based on their *energy*. While this choice was arbitrary, it should give you a better idea of what kind of songs are clustered.
+
+This rotation is disabled when t-SNE to give your poor computer a break.
+
+<p id="inspiration" align="center">
+  <img src="./documentation/images/colors-banner.gif"></img>
+</p>
 
 ### **Color of Points**
 
