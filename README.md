@@ -1,39 +1,187 @@
-# Spotify Cartography
+<p align="center">
+  <img src="./documentation/images/title-banner.gif"></img>
+</p>
 
-[Visit the website](https://spotify-cartography.vercel.app/)
+<p align="center">
+  <i>Explore your music library in a 3D space.</i>
+</p>
 
-First place winning project for [Oregon State Beaverhacks Winter 2022 - Data](https://beaverhacks-winter-2022.devpost.com/?ref_feature=challenge&ref_medium=discover).
+<p align="center">
+  <a href="https://spotify-cartography.vercel.app/">Live Site</a>
+  ·
+  <a href="https://www.youtube.com/watch?v=SSZak8W_P88">Video Demo</a>
+  ·
+  <a href="https://beaverhacks-winter-2022.devpost.com/">Hackathon</a>
+</p>
 
-Explore your Spotify library in a 3D space that groups similar songs together based on their happiness, energy, danceability, and other variables. Using T-SNE and Three.js.
+Spotify Cartography groups simular songs together based on their *happiness*, *energy*, *danceability* and other variables using an algorithm called **t-distributed stochastic neighbor embedding (t-SNE)**.
 
-## Table of Contents
+Your songs are then displayed in a 3D space using Three.js, allowing you to fly around and explore. *Hover* songs to see their details, and *Shift + Click* them to play them on your current Spotify playback device.
+
+You control the parameters passed to t-SNE, as well as how heavly to weight the nine variables it takes into account.
+
+You can also choose a variety of options on what data to visualize. Select all your liked songs, a subset, a variety of albums, artists or playlists, your top listened for different time ranges, or simply use samples provided.
+
+This project won first place for [Oregon State Beaverhacks Winter 2022](https://beaverhacks-winter-2022.devpost.com/?ref_feature=challenge&ref_medium=discover)!
+
+<p id="inspiration" align="center">
+  <img src="./documentation/images/toc-banner.gif"></img>
+</p>
+
 - [Inspiration](#inspiration)
-- [What it does](#what-it-does)
-- [How I built it](#how-i-built-it)
-- [Challenges I ran into](#challenges-i-ran-into)
-- [Accomplishments that I'm proud of](#accomplishments-that-im-proud-of)
-- [What I learned](#what-i-learned)
-- [What's next for Spotify Cartography](#whats-next-for-spotify-cartography)
+- [Usage](#usage)
+  - [Authentication](#authentication)
+  - [What songs would you like to visualize?](#what-songs-would-you-like-to-visualize)
+  - [Data Collection](#data-collection)
+  - [The Algorithm](#the-algorithm)
+  - [Re-Running t-SNE](#re-running-t-sne)
+  - [Weights and Preferences](#weights-and-preferences)
+- [Your 3D Space](#your-3d-space)
+  - [Controls](#controls)
+  - [Song Details](#song-details)
+  - [Points Rotational Speed](#points-rotational-speed)
+  - [Color of Points](#color-of-points)
+- [Development](#development)
 
-## Inspiration
+<p id="inspiration" align="center">
+  <img src="./documentation/images/inspiration-banner.gif"></img>
+</p>
 
-I love music, but navigating my music has always been a challenge. I have almost [400 playlists](https://open.spotify.com/user/12146574234?si=e32247afac004aa5) on Spotify and keep on adding more songs. I'm always looking for better ways to organize my music.
+I love music, but navigating my music library has always been a challenge. I have almost [400 playlists](https://open.spotify.com/user/12146574234?si=e32247afac004aa5) on Spotify and keep on adding more songs. I'm always looking for better ways to organize my music.
 
-I've been obsessed with [Spotify's API](https://developer.spotify.com/documentation/web-api/) for a while. It not only offers access to my entire library but also [statistics on each song that Spotify has generated using machine learning](https://developer.spotify.com/documentation/web-api/reference/#/operations/get-several-audio-features). Spotify can tell you how happy a song is, how energetic it is, what's the likelihood it was performed live is, and other cool statistics.
+I've been obsessed with [Spotify's API](https://developer.spotify.com/documentation/web-api/) for a while.
+
+It not only offers access to my entire library but also [statistics on each song that Spotify has generated using machine learning](https://developer.spotify.com/documentation/web-api/reference/#/operations/get-several-audio-features). Spotify can tell you how *happy* a song is, how *energetic* it is, what's the *likelihood it was performed live* is, and other cool statistics.
 
 While making charts of my happiest or least energetic songs is entertaining, I've always wanted to apply [t-SNE](https://www.youtube.com/watch?v=wvsE8jm1GzE) to the data to see how it'd pan out.
 
-## What it does
+<p id="usage" align="center">
+  <img src="./documentation/images/usage-banner.gif"></img>
+</p>
 
-Log in to Spotify Cartography with your Spotify account, and it will request every song you've saved to your Spotify library as well as each song's "audio features", or statistics mentioned earlier.
+## **Authentication**
 
-Spotify Cartography will then run the data through t-SNE to generate a 3D map of similar songs, allowing you to fly through your library, viewing clusters of similar songs. Use left-click, right-click, and middle mouse buttons to orbit around the scene.
+Login to Spotify Cartography with your Spotify account.
 
-Songs are color-coded based on when you added them, so you might find a pocket of songs added around the same period when you were super happy, or lacking energy.
+Alternatively, you can use sample data without being logged in.
 
-Hovering a track will show you all of its data, including the cover art, title, artists, and audio features. You can control-click any track node to play it in Spotify!
+## **What songs would you like to visualize?**
 
-## How I built it
+Once authenticated, you'll be presented with a menu. You have complete control over what songs you'd like to visualize.
+
+- Your Top Listened
+  - Visualize your top fifty played songs over the course of several years, several months, or several weeks.
+- Liked Songs
+  - Visualize your entire saved library, or a subset using the **limit** and **offset** parameters.
+- Playlists
+  - Select one or more playlists to visualize. This allows you to display the natural order of a playlist, or compare two playlists.
+- Albums
+  - Select one or more albums to visualize. This could be used to compare two simular albums and where they differ / intersect.
+- Artists
+  - Select one or more artists to visualize. This allows you to see how an artist's albums have changed over time, or compare two simular artists and where they differ / intersect.
+- Sample Data
+  - If you don't have a Spotify premium account, or would rather not login / deal with parameters, feel free to explore a few of the samples provided.
+
+## **Data Collection**
+
+Once you've selected your method of query, Spotify Cartography will request every song, as well as their **audio features**. These audio features include:
+
+- Level of happiness
+- Level of energy
+- Level of danceability
+- Chance the song is acoustic
+- Chance the song is instrumental
+- Chance the song is live
+- How much speech the song contains
+- Estimated tempo
+- Popularity of the song
+
+## **The Algorithm**
+
+Spotify Cartography uses these parameters, and nothing else, to map songs in your 3D space.
+
+It does this by using an algorithm called t-SNE to estimate those nine variables into three (x, y, z) to be plotted. This method is not perfect, and the parameters passed into t-SNE matter a ton.
+
+If you're not into math or coding here's a [video](https://www.youtube.com/watch?v=wvsE8jm1GzE) to help you understand what t-SNE does!
+
+## **Re-Running t-SNE**
+
+Once Spotify Cartography has loaded all the data, it will run t-SNE once and show you your 3D space.
+
+**This won't be enough** and you won't find many interesting relationships.
+
+Click the **Algorithm** tab to change t-SNE's parameters and re-run the algorithm. It's best to bump up **iterations** to 1,000. This is how many times t-SNE will be run. 
+
+When you're ready, you can click the **Run** button. In the top left of your screen, you'll see details on the progress.
+
+**Further parameter changes**:
+
+*It's hard to predict how many times you'll have to run t-SNE, but the results tend to stabilize after many iterations.*
+
+*You can play around with **epsilon** (learning rate) and **perplexity** (guess at the number of close neighbors each point has). You can [read more on these here](https://distill.pub/2016/misread-tsne/). I recommend you play around with these, perplexity is said to be best at around `numberTracks ** 0.5`.*
+
+## **Weights and Preferences**
+
+The nine variables mentioned early might not all interest you!
+
+A 3D space showing the *happiness* and *energy* of tracks can yeild better results when the *popularity* of a song is disregarded.
+
+Click the **Preferences** tab at the bottom to change how heavlily each variable is weighed during evaluation.
+
+Changes are saved as soon as they are made, so once you're done you can go back to the **Algorithm** tab and re-run t-SNE.
+
+<p id="inspiration" align="center">
+  <img src="./documentation/images/your3dspace-banner.gif"></img>
+</p>
+
+Every point you see on your 3D map is a song. The bottom will display details on any song you hover, and has a few tabs to open on the right side.
+
+Your frame rate is displayed at the top-right. This is mostly impacted by the number of points you have on the screen.
+
+### **Controls**
+
+Use *Left-Click*, *Right-Click*, and *Scroll-Wheel* to orbit around the scene.
+
+You can *Control + Click* or *Shift + Click* to play a song. You must be logged into Spotify, and have Spotify playing music on any device for it to work.
+
+### **Song Details**
+
+You can hover over any song to see it's details below, including the nine variables such as it's *happiness* or *energy*. If applicable, Spotify Cartographer will also show the date it was added.
+
+### **Points Rotational Speed**
+
+The **speed at which points rotate** is based on their *energy*. While this choice was arbitrary, it should give you a better idea of what kind of songs are clustered.
+
+### **Color of Points**
+
+The **color of a point** changes based on the query made.
+
+- Your Top Listened
+  - Color is based on position on your top listened chart.
+- Liked Songs
+  - Color is based on when the song was added.
+- Playlists
+  - One Playlist
+    - Color is based on position in the playlist.
+  - Multiple Playlists
+    - Color is based on the playlist each song is from.
+- Albums
+  - One Albums
+    - Color is based on position in the album.
+  - Multiple Albums
+    - Color is based on the album each song is from.
+- Artists
+  - One Artist
+    - One Album
+      - Color is based on position in the album.
+    - Multiple Albums
+      - Color is based on the album each song is from.
+  - Multiple Artists
+    - Color is based on the artist each song is from.
+
+<p id="development" align="center">
+  <img src="./documentation/images/development-banner.gif"></img>
+</p>
 
 The website was built using [Vue.js](https://vuejs.org/); I'm a big fanboy of Vue. The [Vuex](https://vuex.vuejs.org/) store was used for most data, as it's global and allows me to manage the mutation of the data.
 
@@ -43,28 +191,4 @@ I used the [Spotify API](https://developer.spotify.com/documentation/web-api/) t
 
 The npm library [@keckelt/tsne](https://www.npmjs.com/package/@keckelt/tsne?activeTab=dependents) was used for processing the data. At first, I was interested in implementing it myself based on the [papers I found](https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf), but shortly realized it was best left for another time.
 
-Past that, a lot of time, love, and patience.
-
-## Challenges I ran into
-
-Three.js on the other hand was completely new to me, as I had never worked with a 3D library before. I had dabbled in p5.js for 2D rendering, but Three.js was a learning curve. I had to tinker around for a long time and refactor a couple of times before things started working.
-
-Finding the right t-SNE library was a disaster. At first, I tried [karpathy/tsnejs](https://github.com/karpathy/tsnejs/blob/master/tsne.js) which I had to copy and paste, then convert to Typescript. After that didn't work, I moved on to the npm package [tsne-js](https://www.npmjs.com/package/tsne-js), which broke on me as well. I finally found the npm package [@tensorflow/tfjs-tsne](https://www.npmjs.com/package/@tensorflow/tfjs-tsne), only to work with it for hours and discover it had been [abandoned by its creators](https://github.com/tensorflow/tfjs-tsne/issues/74#issuecomment-463445543) and was [only compatible with @tensorflow/tfjs@0.14.2](https://github.com/tensorflow/tfjs-tsne/issues/81), which still didn't work for me. I finally settled on an npm library [@keckelt/tsne](https://www.npmjs.com/package/@keckelt/tsne) which worked and moved on. This wasted a lot of time and became the biggest hurdle for the project.
-
-## Accomplishments that I'm proud of
-
-The application itself is fun to play with. I have had this dream of running t-SNE on the data, and I'm so happy it worked. I can't wait to add VR, playlist selection, and other fun tools that allow people to explore this space more.
-
-Breaching into 3D rendering was difficult, but worked out in the end. I'm proud I was able to figure it out and make Three.js work for me. That would have been a deal-breaker.
-
-## What I learned
-
-I learned I need to test libraries out with sample data before I commit to using them. Realizing most t-SNE libraries weren't going to work for me was a real bummer.
-
-I learned a lot about 3D rendering and the power of Three.js, I hope to implement it in future projects.
-
-## What's next for Spotify Cartography
-
-A VR extension would be awesome! I own an Oculus Quest 2 and would love to experience this 3D map of my music in VR.
-
-Tools to allow users to select areas and generate playlists based on the songs inside would be nice, or multiple selections. The goal is to allow the user to group music and then create something based on their groupings.
+Most of the development of Spotify Cartography took place over the three day hackaton it was built for. Past that, I decided to add some features and clean up the code.

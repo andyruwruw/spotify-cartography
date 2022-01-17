@@ -219,6 +219,7 @@ export default Vue.extend<IData, IMethods, IComputed>({
       this.camera = createPerspectiveCamera(container);
       this.scene = createScene();
       this.controls = createOrbitControls(this.camera, container);
+      (this.controls as OrbitControls).autoRotate = true;
 
       addPointLightToScene(this.scene);
       addAmbientLightToScene(this.scene);
@@ -233,6 +234,8 @@ export default Vue.extend<IData, IMethods, IComputed>({
 
     animate() {
       requestAnimationFrame(this.animate);
+
+      (this.controls as OrbitControls).update();
 
       const now = Date.now();
       const milliseconds = now - this.lastFrame;
