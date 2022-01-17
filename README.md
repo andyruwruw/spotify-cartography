@@ -107,6 +107,8 @@ The **speed at which points rotate** is based on their *energy*. While this choi
 
 This rotation is disabled when t-SNE to give your poor computer a break.
 
+---
+
 <p id="inspiration" align="center">
   <img src="./documentation/images/colors-banner.gif"></img>
 </p>
