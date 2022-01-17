@@ -18,13 +18,15 @@
 
 ---
 
-Spotify Cartography groups simular songs together based on their *happiness*, *energy*, *danceability* and other variables using an algorithm called **t-distributed stochastic neighbor embedding (t-SNE)**.
+Spotify Cartography groups simular songs together based on their *happiness*, *energy*, *danceability* and six other variables using an algorithm called **t-distributed stochastic neighbor embedding (t-SNE)**.
 
-Your songs are then displayed in a 3D space using Three.js, allowing you to fly around and explore. *Hover* songs to see their details, and *Shift + Click* them to play them on your current Spotify playback device.
+Your songs are then displayed in a 3D space using Three.js, allowing you to fly around and explore.
 
-You control the parameters passed to t-SNE, as well as how heavly to weight the nine variables it takes into account.
+*Hover* songs to see their details, and *Shift + Click* them to play them on your current Spotify playback device.
 
-You can also choose a variety of options on what data to visualize. Select all your liked songs, a subset, a variety of albums, artists or playlists, your top listened for different time ranges, or simply use samples provided.
+You control the parameters passed to t-SNE, as well as how heavly to *weight* the nine variables it takes into account.
+
+You can also choose a variety of options on what data to visualize. Select all your liked songs, a subset of your liked songs, a set of albums, artists or playlists, your top listened for different time ranges, or simply use samples provided.
 
 <p align="center">
   <img src="./documentation/images/toc-banner.gif"></img>
