@@ -136,7 +136,7 @@ const actions: ActionTree<PlayerModuleState, any> = {
       const connected = await player.connect();
 
       if (connected) {
-        // await waitUntilUserHasSelectedPlayer(player);
+        await waitUntilUserHasSelectedPlayer(player);
       }
     })();
   },

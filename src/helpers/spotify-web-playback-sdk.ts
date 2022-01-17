@@ -4,8 +4,16 @@ export interface WindowWithPlayer extends Window {
   setPlayer: (player: any) => void;
 }
 
+/**
+ * Run when Spotify Web Playback SDK is ready.
+ */
 (window as unknown as WindowWithPlayer).onSpotifyWebPlaybackSDKReady = () => null;
 
+/**
+ * Run when Spotify Web Playback SDK is loading.
+ *
+ * @returns {Promise<SpotifyWebPlaybackSDKLoadResolution>}
+ */
 export const waitForSpotifyWebPlaybackSDKToLoad = async () => new Promise((resolve) => {
   if ((window as unknown as WindowWithPlayer).Spotify) {
     resolve((window as unknown as WindowWithPlayer).Spotify);
@@ -16,16 +24,30 @@ export const waitForSpotifyWebPlaybackSDKToLoad = async () => new Promise((resol
   }
 });
 
+/**
+ * Run when waiting for user to transfer playback.
+ *
+ * @param sdk
+ * @returns
+ */
 export const waitUntilUserHasSelectedPlayer = async (sdk: any) => new Promise((resolve) => {
   const interval = setInterval(async () => {
-    const state = await sdk.getCurrentState();
-    if (state !== null) {
-      resolve(state);
-      clearInterval(interval);
+    if (sdk && 'getCurrentState' in sdk) {
+      const state = await sdk.getCurrentState();
+
+      if (state !== null) {
+        resolve(state);
+        clearInterval(interval);
+      }
     }
   });
 });
 
+/**
+ * Sets Player as web player.
+ *
+ * @param player
+ */
 export const setPlayer = (player: any): void => {
   (window as unknown as WindowWithPlayer).setPlayer(player);
 };

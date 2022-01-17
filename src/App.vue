@@ -6,7 +6,9 @@
       dark
       flat>
       <div class="d-flex align-center">
-        <span>
+        <span
+          :class="$style.title"
+          @click="goHome">
           Spotify Cartography
         </span>
       </div>
@@ -33,5 +35,23 @@ import Vue from 'vue';
 
 export default Vue.extend({
   name: 'App',
+
+  methods: {
+    goHome() {
+      if (this.$route.path !== '/') {
+        this.$router.push('/');
+      }
+    },
+  },
 });
 </script>
+
+<style lang="scss" module>
+.title {
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+</style>
