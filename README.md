@@ -29,6 +29,11 @@ This project won first place for [Oregon State Beaverhacks Winter 2022](https://
 </p>
 
 - [Inspiration](#inspiration)
+- [Your 3D Space](#your-3d-space)
+  - [Controls](#controls)
+  - [Song Details](#song-details)
+  - [Points Rotational Speed](#points-rotational-speed)
+  - [Color of Points](#color-of-points)
 - [Usage](#usage)
   - [Authentication](#authentication)
   - [What songs would you like to visualize?](#what-songs-would-you-like-to-visualize)
@@ -36,11 +41,6 @@ This project won first place for [Oregon State Beaverhacks Winter 2022](https://
   - [The Algorithm](#the-algorithm)
   - [Re-Running t-SNE](#re-running-t-sne)
   - [Weights and Preferences](#weights-and-preferences)
-- [Your 3D Space](#your-3d-space)
-  - [Controls](#controls)
-  - [Song Details](#song-details)
-  - [Points Rotational Speed](#points-rotational-speed)
-  - [Color of Points](#color-of-points)
 - [Development](#development)
 
 <p id="inspiration" align="center">
@@ -54,81 +54,6 @@ I've been obsessed with [Spotify's API](https://developer.spotify.com/documentat
 It not only offers access to my entire library but also [statistics on each song that Spotify has generated using machine learning](https://developer.spotify.com/documentation/web-api/reference/#/operations/get-several-audio-features). Spotify can tell you how *happy* a song is, how *energetic* it is, what's the *likelihood it was performed live* is, and other cool statistics.
 
 While making charts of my happiest or least energetic songs is entertaining, I've always wanted to apply [t-SNE](https://www.youtube.com/watch?v=wvsE8jm1GzE) to the data to see how it'd pan out.
-
-<p id="usage" align="center">
-  <img src="./documentation/images/usage-banner.gif"></img>
-</p>
-
-## **Authentication**
-
-Login to Spotify Cartography with your Spotify account.
-
-Alternatively, you can use sample data without being logged in.
-
-## **What songs would you like to visualize?**
-
-Once authenticated, you'll be presented with a menu. You have complete control over what songs you'd like to visualize.
-
-- Your Top Listened
-  - Visualize your top fifty played songs over the course of several years, several months, or several weeks.
-- Liked Songs
-  - Visualize your entire saved library, or a subset using the **limit** and **offset** parameters.
-- Playlists
-  - Select one or more playlists to visualize. This allows you to display the natural order of a playlist, or compare two playlists.
-- Albums
-  - Select one or more albums to visualize. This could be used to compare two simular albums and where they differ / intersect.
-- Artists
-  - Select one or more artists to visualize. This allows you to see how an artist's albums have changed over time, or compare two simular artists and where they differ / intersect.
-- Sample Data
-  - If you don't have a Spotify premium account, or would rather not login / deal with parameters, feel free to explore a few of the samples provided.
-
-## **Data Collection**
-
-Once you've selected your method of query, Spotify Cartography will request every song, as well as their **audio features**. These audio features include:
-
-- Level of happiness
-- Level of energy
-- Level of danceability
-- Chance the song is acoustic
-- Chance the song is instrumental
-- Chance the song is live
-- How much speech the song contains
-- Estimated tempo
-- Popularity of the song
-
-## **The Algorithm**
-
-Spotify Cartography uses these parameters, and nothing else, to map songs in your 3D space.
-
-It does this by using an algorithm called t-SNE to estimate those nine variables into three (x, y, z) to be plotted. This method is not perfect, and the parameters passed into t-SNE matter a ton.
-
-If you're not into math or coding here's a [video](https://www.youtube.com/watch?v=wvsE8jm1GzE) to help you understand what t-SNE does!
-
-## **Re-Running t-SNE**
-
-Once Spotify Cartography has loaded all the data, it will run t-SNE once and show you your 3D space.
-
-**This won't be enough** and you won't find many interesting relationships.
-
-Click the **Algorithm** tab to change t-SNE's parameters and re-run the algorithm. It's best to bump up **iterations** to 1,000. This is how many times t-SNE will be run. 
-
-When you're ready, you can click the **Run** button. In the top left of your screen, you'll see details on the progress.
-
-**Further parameter changes**:
-
-*It's hard to predict how many times you'll have to run t-SNE, but the results tend to stabilize after many iterations.*
-
-*You can play around with **epsilon** (learning rate) and **perplexity** (guess at the number of close neighbors each point has). You can [read more on these here](https://distill.pub/2016/misread-tsne/). I recommend you play around with these, perplexity is said to be best at around `numberTracks ** 0.5`.*
-
-## **Weights and Preferences**
-
-The nine variables mentioned early might not all interest you!
-
-A 3D space showing the *happiness* and *energy* of tracks can yeild better results when the *popularity* of a song is disregarded.
-
-Click the **Preferences** tab at the bottom to change how heavlily each variable is weighed during evaluation.
-
-Changes are saved as soon as they are made, so once you're done you can go back to the **Algorithm** tab and re-run t-SNE.
 
 <p id="inspiration" align="center">
   <img src="./documentation/images/your3dspace-banner.gif"></img>
@@ -212,6 +137,81 @@ The **color of a point** changes based on the query made.
       - Color is based on the album each song is from.
   - Multiple Artists
     - Color is based on the artist each song is from.
+
+<p id="usage" align="center">
+  <img src="./documentation/images/usage-banner.gif"></img>
+</p>
+
+## **Authentication**
+
+Login to Spotify Cartography with your Spotify account.
+
+Alternatively, you can use sample data without being logged in.
+
+## **What songs would you like to visualize?**
+
+Once authenticated, you'll be presented with a menu. You have complete control over what songs you'd like to visualize.
+
+- Your Top Listened
+  - Visualize your top fifty played songs over the course of several years, several months, or several weeks.
+- Liked Songs
+  - Visualize your entire saved library, or a subset using the **limit** and **offset** parameters.
+- Playlists
+  - Select one or more playlists to visualize. This allows you to display the natural order of a playlist, or compare two playlists.
+- Albums
+  - Select one or more albums to visualize. This could be used to compare two simular albums and where they differ / intersect.
+- Artists
+  - Select one or more artists to visualize. This allows you to see how an artist's albums have changed over time, or compare two simular artists and where they differ / intersect.
+- Sample Data
+  - If you don't have a Spotify premium account, or would rather not login / deal with parameters, feel free to explore a few of the samples provided.
+
+## **Data Collection**
+
+Once you've selected your method of query, Spotify Cartography will request every song, as well as their **audio features**. These audio features include:
+
+- Level of happiness
+- Level of energy
+- Level of danceability
+- Chance the song is acoustic
+- Chance the song is instrumental
+- Chance the song is live
+- How much speech the song contains
+- Estimated tempo
+- Popularity of the song
+
+## **The Algorithm**
+
+Spotify Cartography uses these parameters, and nothing else, to map songs in your 3D space.
+
+It does this by using an algorithm called t-SNE to estimate those nine variables into three (x, y, z) to be plotted. This method is not perfect, and the parameters passed into t-SNE matter a ton.
+
+If you're not into math or coding here's a [video](https://www.youtube.com/watch?v=wvsE8jm1GzE) to help you understand what t-SNE does!
+
+## **Re-Running t-SNE**
+
+Once Spotify Cartography has loaded all the data, it will run t-SNE once and show you your 3D space.
+
+**This won't be enough** and you won't find many interesting relationships.
+
+Click the **Algorithm** tab to change t-SNE's parameters and re-run the algorithm. It's best to bump up **iterations** to 1,000. This is how many times t-SNE will be run. 
+
+When you're ready, you can click the **Run** button. In the top left of your screen, you'll see details on the progress.
+
+**Further parameter changes**:
+
+*It's hard to predict how many times you'll have to run t-SNE, but the results tend to stabilize after many iterations.*
+
+*You can play around with **epsilon** (learning rate) and **perplexity** (guess at the number of close neighbors each point has). You can [read more on these here](https://distill.pub/2016/misread-tsne/). I recommend you play around with these, perplexity is said to be best at around `numberTracks ** 0.5`.*
+
+## **Weights and Preferences**
+
+The nine variables mentioned early might not all interest you!
+
+A 3D space showing the *happiness* and *energy* of tracks can yeild better results when the *popularity* of a song is disregarded.
+
+Click the **Preferences** tab at the bottom to change how heavlily each variable is weighed during evaluation.
+
+Changes are saved as soon as they are made, so once you're done you can go back to the **Algorithm** tab and re-run t-SNE.
 
 <p id="development" align="center">
   <img src="./documentation/images/development-banner.gif"></img>
