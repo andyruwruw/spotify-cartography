@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;1,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100;0,200;0,300;0,400;1,600&display=swap');
 
 p,
 span,
@@ -14,6 +14,28 @@ h4 {
   background: #191927;
 }
 
+.v-menu__content {
+  .v-list.v-select-list {
+    background: #2c2c3d;
+
+    .v-list-item {
+      .v-list-item__content {
+        .v-list-item__title {
+          color: white;
+        }
+      }
+
+      &.v-list-item--active {
+        .v-list-item__content {
+          .v-list-item__title {
+            color: inherit
+          }
+        }
+      }
+    }
+  }
+}
+
 #container {
   position: fixed;
   left: 0;
@@ -21,4 +43,29 @@ h4 {
   width: 100vw;
   height: 100vh;
   display: block;
+}
+
+@keyframes slide-in-tab {
+  from {
+    bottom: 0px;
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    bottom: -240px;
+  }
+  to {
+    bottom: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

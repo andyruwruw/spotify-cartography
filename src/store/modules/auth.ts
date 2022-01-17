@@ -8,19 +8,25 @@ import {
 import api from '@/api';
 
 export interface AuthModuleState {
+  displayName: string;
   accessToken: string;
 }
 
 const defaultState = (): AuthModuleState => ({
+  displayName: '',
   accessToken: '',
 });
 
 const getters: GetterTree<AuthModuleState, any> = {
   isAuthenticated: (state) => state.accessToken && state.accessToken.length > 0,
   getAccessToken: (state) => state.accessToken,
+  getDisplayName: (state) => state.displayName,
 };
 
 const mutations: MutationTree<AuthModuleState> = {
+  setDisplayName(state, displayName: string) {
+    state.displayName = displayName;
+  },
   setAccessToken(state, accessToken: string) {
     state.accessToken = accessToken;
   },
@@ -33,7 +39,7 @@ const actions: ActionTree<AuthModuleState, any> = {
     window.location.href = url;
   },
 
-  callback({ commit, dispatch }, accessToken) {
+  async callback({ commit, dispatch }, accessToken) {
     commit('setAccessToken', accessToken);
 
     api.spotify.auth.setAccessToken(accessToken);
@@ -43,6 +49,10 @@ const actions: ActionTree<AuthModuleState, any> = {
       null,
       { root: true },
     );
+
+    const user = (await api.spotify.user.getMe()).body;
+
+    commit('setDisplayName', user.display_name);
   },
 
   logout(context) {

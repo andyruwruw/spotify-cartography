@@ -20,5 +20,6 @@ module.exports = {
     'no-param-reassign': 'off',
     'vue/no-side-effects-in-computed-properties': 'off',
     'import/prefer-default-export': 'off',
+    'no-loop-func': 'off',
   },
 };
