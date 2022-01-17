@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <i>Explore your music library in a 3D space.</i>
+  1st place winner for <a href="https://beaverhacks-winter-2022.devpost.com/">Oregon State Beaverhacks Winter 2022</a>!
 </p>
 
 <p align="center">
@@ -14,6 +14,10 @@
   <a href="https://beaverhacks-winter-2022.devpost.com/">Hackathon</a>
 </p>
 
+
+
+---
+
 Spotify Cartography groups simular songs together based on their *happiness*, *energy*, *danceability* and other variables using an algorithm called **t-distributed stochastic neighbor embedding (t-SNE)**.
 
 Your songs are then displayed in a 3D space using Three.js, allowing you to fly around and explore. *Hover* songs to see their details, and *Shift + Click* them to play them on your current Spotify playback device.
@@ -22,9 +26,7 @@ You control the parameters passed to t-SNE, as well as how heavly to weight the 
 
 You can also choose a variety of options on what data to visualize. Select all your liked songs, a subset, a variety of albums, artists or playlists, your top listened for different time ranges, or simply use samples provided.
 
-This project won first place for [Oregon State Beaverhacks Winter 2022](https://beaverhacks-winter-2022.devpost.com/?ref_feature=challenge&ref_medium=discover)!
-
-<p id="inspiration" align="center">
+<p align="center">
   <img src="./documentation/images/toc-banner.gif"></img>
 </p>
 
@@ -32,7 +34,7 @@ This project won first place for [Oregon State Beaverhacks Winter 2022](https://
 - [Your 3D Space](#your-3d-space)
   - [Controls](#controls)
   - [Song Details](#song-details)
-  - [Points Rotational Speed](#points-rotational-speed)
+  - [Rotational Speed](#rotational-speed)
   - [Color of Points](#color-of-points)
 - [Usage](#usage)
   - [Authentication](#authentication)
@@ -55,7 +57,7 @@ It not only offers access to my entire library but also [statistics on each song
 
 While making charts of my happiest or least energetic songs is entertaining, I've always wanted to apply [t-SNE](https://www.youtube.com/watch?v=wvsE8jm1GzE) to the data to see how it'd pan out.
 
-<p id="inspiration" align="center">
+<p id="your-3d-space" align="center">
   <img src="./documentation/images/your3dspace-banner.gif"></img>
 </p>
 
@@ -65,11 +67,15 @@ Your frame rate is displayed at the top-right. This is mostly impacted by the nu
 
 ---
 
-<p id="inspiration" align="center">
+<p id="controls" align="center">
   <img src="./documentation/images/controls-banner.png"></img>
 </p>
 
-### **Controls**
+<h2>
+  <b>
+    Controls
+  </b>
+</h2>
 
 Use your mouse to move around the scene. Currently there isn't support for touchscreens and VR, but hopefully that can be added soon!
 
@@ -83,11 +89,15 @@ Use your mouse to move around the scene. Currently there isn't support for touch
 
 ---
 
-<p id="inspiration" align="center">
+<p id="song-details" align="center">
   <img src="./documentation/images/song-details-banner.gif"></img>
 </p>
 
-### **Song Details**
+<h2>
+  <b>
+    Song Details
+  </b>
+</h2>
 
 You can hover over any song to see it's details at the bottom, including it's cover art, name and artists.
 
@@ -97,11 +107,15 @@ If applicable, Spotify Cartographer will also show the date it was added.
 
 ---
 
-<p id="inspiration" align="center">
+<p id="rotational-speed" align="center">
   <img src="./documentation/images/rotation-banner.gif"></img>
 </p>
 
-### **Points Rotational Speed**
+<h2>
+  <b>
+    Rotational Speed
+  </b>
+</h2>
 
 The **speed at which points rotate** is based on their *energy*. While this choice was arbitrary, it should give you a better idea of what kind of songs are clustered.
 
@@ -109,11 +123,15 @@ This rotation is disabled when t-SNE to give your poor computer a break.
 
 ---
 
-<p id="inspiration" align="center">
+<p id="color-of-points" align="center">
   <img src="./documentation/images/colors-banner.gif"></img>
 </p>
 
-### **Color of Points**
+<h2>
+  <b>
+    Color of Points
+  </b>
+</h2>
 
 The **color of a point** changes based on the query made.
 
@@ -144,13 +162,21 @@ The **color of a point** changes based on the query made.
   <img src="./documentation/images/usage-banner.gif"></img>
 </p>
 
-## **Authentication**
+<h2 id="authentication">
+  <b>
+    I. Authentication
+  </b>
+</h2>
 
 Login to Spotify Cartography with your Spotify account.
 
 Alternatively, you can use sample data without being logged in.
 
-## **What songs would you like to visualize?**
+<h2 id="what-songs-would-you-like-to-visualize">
+  <b>
+    II. What songs would you like to visualize?
+  </b>
+</h2>
 
 Once authenticated, you'll be presented with a menu. You have complete control over what songs you'd like to visualize.
 
@@ -167,7 +193,11 @@ Once authenticated, you'll be presented with a menu. You have complete control o
 - Sample Data
   - If you don't have a Spotify premium account, or would rather not login / deal with parameters, feel free to explore a few of the samples provided.
 
-## **Data Collection**
+<h2 id="data-collection">
+  <b>
+    III. Data Collection
+  </b>
+</h2>
 
 Once you've selected your method of query, Spotify Cartography will request every song, as well as their **audio features**. These audio features include:
 
@@ -181,7 +211,11 @@ Once you've selected your method of query, Spotify Cartography will request ever
 - Estimated tempo
 - Popularity of the song
 
-## **The Algorithm**
+<h2 id="the-algorithm">
+  <b>
+    IV. The Algorithm
+  </b>
+</h2>
 
 Spotify Cartography uses these parameters, and nothing else, to map songs in your 3D space.
 
@@ -189,7 +223,11 @@ It does this by using an algorithm called t-SNE to estimate those nine variables
 
 If you're not into math or coding here's a [video](https://www.youtube.com/watch?v=wvsE8jm1GzE) to help you understand what t-SNE does!
 
-## **Re-Running t-SNE**
+<h2 id="re-running-t-sne">
+  <b>
+    V. Re-Running t-SNE
+  </b>
+</h2>
 
 Once Spotify Cartography has loaded all the data, it will run t-SNE once and show you your 3D space.
 
@@ -205,7 +243,11 @@ When you're ready, you can click the **Run** button. In the top left of your scr
 
 *You can play around with **epsilon** (learning rate) and **perplexity** (guess at the number of close neighbors each point has). You can [read more on these here](https://distill.pub/2016/misread-tsne/). I recommend you play around with these, perplexity is said to be best at around `numberTracks ** 0.5`.*
 
-## **Weights and Preferences**
+<h2 id="weights-and-preferences">
+  <b>
+    VI. Weights and Preferences
+  </b>
+</h2>
 
 The nine variables mentioned early might not all interest you!
 
