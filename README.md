@@ -272,3 +272,15 @@ I used the [Spotify API](https://developer.spotify.com/documentation/web-api/) t
 The npm library [@keckelt/tsne](https://www.npmjs.com/package/@keckelt/tsne?activeTab=dependents) was used for processing the data. At first, I was interested in implementing it myself based on the [papers I found](https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf), but shortly realized it was best left for another time.
 
 Most of the development of Spotify Cartography took place over the three day hackaton it was built for. Past that, I decided to add some features and clean up the code.
+
+## Resources
+
+- Youtube | [A.I. Experiments: Visualizing High-Dimensional Space](https://www.youtube.com/watch?v=wvsE8jm1GzE)
+- Wikipedia | [t-distributed stochastic neighbor embedding](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding)
+- Journal of Machine Learning Research | [Visualizing Data using t-SNE](https://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf)
+- Laurens Van Der Maaten | [t-SNE](https://lvdmaaten.github.io/tsne/)
+- Wattenberg, Viegas & Johnson | [How to Use t-SNE Effectively](https://distill.pub/2016/misread-tsne/)
+- Google AI Blog | [Realtime tSNE Visualizations with TensorFlow.js](https://ai.googleblog.com/2018/06/realtime-tsne-visualizations-with.html)
+- Colah's Blog | [Visualizing MNIST: An Exploration of Dimensionality Reduction](https://colah.github.io/posts/2014-10-Visualizing-MNIST/)
+- Google Arts & Culture | [t-SNE Art Map](https://artsexperiments.withgoogle.com/tsnemap/)
+- npm | [@keckelt/tsne](https://www.npmjs.com/package/@keckelt/tsne?activeTab=dependents)
