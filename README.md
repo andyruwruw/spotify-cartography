@@ -46,6 +46,7 @@ You can also choose a variety of options on what data to visualize. Select all y
   - [Re-Running t-SNE](#re-running-t-sne)
   - [Weights and Preferences](#weights-and-preferences)
 - [Development](#development)
+  - [Resources](#resources)
 
 <p id="inspiration" align="center">
   <img src="./documentation/images/inspiration-banner.gif"></img>
